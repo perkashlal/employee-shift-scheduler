@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 
 class EmployeeShiftSchedulerTest {
 
-	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
-
+    @Test
+    void schedulerShouldStartWithNoScheduledShifts() {
+        EmployeeShiftScheduler scheduler = new EmployeeShiftScheduler();
+        assertEquals(0, scheduler.getNumberOfScheduledShifts());
+    }
 }
