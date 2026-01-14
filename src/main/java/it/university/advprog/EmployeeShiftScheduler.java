@@ -2,13 +2,17 @@ package it.university.advprog;
 
 public class EmployeeShiftScheduler {
 
-    private int scheduledShifts = 0;
+    private int numberOfScheduledShifts = 0;
 
     public int getNumberOfScheduledShifts() {
-        return scheduledShifts;
+        return numberOfScheduledShifts;
     }
 
     public void addShift() {
-        scheduledShifts++;
+        numberOfScheduledShifts++;
+    }
+    
+ public void removeShift() {
+        numberOfScheduledShifts--;
     }
 }
