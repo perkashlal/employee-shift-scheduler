@@ -30,4 +30,7 @@ public class EmployeeShiftScheduler {
     public void removeShift() {
         scheduledShifts--;
     }
+    public void updateShift(int index, String newShift) {
+        shifts.set(index, newShift);
+    }
 }
