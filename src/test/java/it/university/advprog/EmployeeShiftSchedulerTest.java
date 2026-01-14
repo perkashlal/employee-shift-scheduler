@@ -1,23 +1,27 @@
 package it.university.advprog;
 
-import static org.junit.jupiter.api.Assertions.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class EmployeeShiftSchedulerTest {
 
+    private EmployeeShiftScheduler scheduler;
+
+    @BeforeEach
+    void setUp() {
+        scheduler = new EmployeeShiftScheduler();
+    }
+
     @Test
     void schedulerShouldStartWithNoScheduledShifts() {
-        EmployeeShiftScheduler scheduler = new EmployeeShiftScheduler();
         assertEquals(0, scheduler.getNumberOfScheduledShifts());
-        
-        @Test
-        void schedulerShouldContainOneShiftAfterAddingAShift() {
-            EmployeeShiftScheduler scheduler = new EmployeeShiftScheduler();
+    }
 
-            scheduler.addShift();
-
-            assertEquals(1, scheduler.getNumberOfScheduledShifts());
-        }
-
+    @Test
+    void schedulerShouldContainOneShiftAfterAddingAShift() {
+        scheduler.addShift();
+        assertEquals(1, scheduler.getNumberOfScheduledShifts());
+    }
 }
