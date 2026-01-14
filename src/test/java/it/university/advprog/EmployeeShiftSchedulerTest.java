@@ -23,16 +23,5 @@ class EmployeeShiftSchedulerTest {
     void schedulerShouldContainOneShiftAfterAddingAShift() {
         scheduler.addShift();
         assertEquals(1, scheduler.getNumberOfScheduledShifts());
-        
     }
-    @Test
-    void schedulerShouldContainOneShiftAfterRemovingAShift() {
-        scheduler.addShift();
-        scheduler.addShift();
-
-        scheduler.removeShift();
-
-        assertEquals(1, scheduler.getNumberOfScheduledShifts());
-    }
-
 }
