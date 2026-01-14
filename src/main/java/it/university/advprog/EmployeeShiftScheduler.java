@@ -1,7 +1,8 @@
 package it.university.advprog;
+import java.util.List;
 
 import java.util.ArrayList;
-import java.util.List;
+
 
 public class EmployeeShiftScheduler {
 
@@ -21,10 +22,10 @@ public class EmployeeShiftScheduler {
         shifts.add(shift);
         scheduledShifts++;
     }
-
     public List<String> getShifts() {
-        return shifts;
+        return new ArrayList<>(shifts);
     }
+
 
     public void removeShift() {
         scheduledShifts--;
