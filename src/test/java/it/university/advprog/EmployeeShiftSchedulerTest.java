@@ -34,5 +34,15 @@ class EmployeeShiftSchedulerTest {
 
         assertEquals(1, scheduler.getNumberOfScheduledShifts());
     }
+    @Test
+    void schedulerShouldReturnAddedShiftsWhenViewed() {
+        scheduler.addShift("Morning");
+        scheduler.addShift("Evening");
+
+        assertEquals(
+            List.of("Morning", "Evening"),
+            scheduler.getShifts()
+        );
+    }
 
 }
