@@ -45,5 +45,18 @@ class EmployeeShiftSchedulerTest {
             scheduler.getShifts()
         );
     }
+    @Test
+    void schedulerShouldUpdateShiftAtGivenIndex() {
+        scheduler.addShift("Morning");
+        scheduler.addShift("Evening");
+
+        scheduler.updateShift(1, "Night");
+
+        assertEquals(
+            List.of("Morning", "Night"),
+            scheduler.getShifts()
+        );
+    }
+
 
 }
