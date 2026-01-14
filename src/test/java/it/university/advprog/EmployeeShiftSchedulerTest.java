@@ -1,4 +1,5 @@
 package it.university.advprog;
+import java.util.List;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,6 +34,16 @@ class EmployeeShiftSchedulerTest {
         scheduler.removeShift();
 
         assertEquals(1, scheduler.getNumberOfScheduledShifts());
+    }
+    @Test
+    void schedulerShouldReturnAddedShiftsWhenViewed() {
+        scheduler.addShift("Morning");
+        scheduler.addShift("Evening");
+
+        assertEquals(
+            List.of("Morning", "Evening"),
+            scheduler.getShifts()
+        );
     }
 
 }
