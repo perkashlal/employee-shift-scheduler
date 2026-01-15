@@ -1,36 +1,34 @@
 package it.university.advprog;
-import java.util.List;
 
 import java.util.ArrayList;
-
+import java.util.List;
 
 public class EmployeeShiftScheduler {
 
-    private int scheduledShifts;
     private final List<String> shifts = new ArrayList<>();
 
     public int getNumberOfScheduledShifts() {
-        return scheduledShifts;
+        return shifts.size();
+    }
+
+    public void addShift() {
+        shifts.add("UNSPECIFIED");
     }
 
    
-    public void addShift() {
-        scheduledShifts++;
-    }
-
     public void addShift(String shift) {
         shifts.add(shift);
-        scheduledShifts++;
-    }
-    public List<String> getShifts() {
-        return new ArrayList<>(shifts);
     }
 
-
-    public void removeShift() {
-        scheduledShifts--;
-    }
     public void updateShift(int index, String newShift) {
         shifts.set(index, newShift);
+    }
+
+    public void removeShift() {
+        shifts.remove(shifts.size() - 1);
+    }
+
+    public List<String> getShifts() {
+        return new ArrayList<>(shifts); // defensive copy
     }
 }
