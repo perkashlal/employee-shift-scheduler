@@ -1,6 +1,5 @@
 package it.university.advprog.repository.mongo;
-import it.university.advprog.Employee;
-import it.university.advprog.repository.EmployeeRepository;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -12,7 +11,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 
-
+import it.university.advprog.Employee;
+import it.university.advprog.repository.EmployeeRepository;
 
 public class EmployeeMongoRepository implements EmployeeRepository {
 
@@ -40,20 +40,12 @@ public class EmployeeMongoRepository implements EmployeeRepository {
                 .find(Filters.eq("id", id))
                 .first();
 
-        if (document == null) {
-            return null;
-        }
-
-        return fromDocumentToEmployee(document);
+        return document != null ? fromDocumentToEmployee(document) : null;
     }
 
     @Override
     public void save(Employee employee) {
-        employeeCollection.insertOne(
-                new Document()
-                        .append("id", employee.getId())
-                        .append("name", employee.getName())
-        );
+        employeeCollection.insertOne(toDocument(employee));
     }
 
     @Override
@@ -61,10 +53,18 @@ public class EmployeeMongoRepository implements EmployeeRepository {
         employeeCollection.deleteOne(Filters.eq("id", id));
     }
 
+    
+
     private Employee fromDocumentToEmployee(Document document) {
         return new Employee(
-                String.valueOf(document.get("id")),
-                String.valueOf(document.get("name"))
+                document.getString("id"),
+                document.getString("name")
         );
+    }
+
+    private Document toDocument(Employee employee) {
+        return new Document()
+                .append("id", employee.getId())
+                .append("name", employee.getName());
     }
 }
