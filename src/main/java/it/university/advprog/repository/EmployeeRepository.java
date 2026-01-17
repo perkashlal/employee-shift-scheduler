@@ -1,8 +1,8 @@
 package it.university.advprog.repository;
-
+import it.university.advprog.Employee;
 import java.util.List;
 
-import it.university.advprog.Employee;
+
 
 public interface EmployeeRepository {
 
