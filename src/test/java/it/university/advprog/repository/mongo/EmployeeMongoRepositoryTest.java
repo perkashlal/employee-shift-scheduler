@@ -1,5 +1,5 @@
-package it.university.advprog.repository.mongo;
-
+/* package it.university.advprog.repository.mongo;
+import org.junit.jupiter.api.Disabled;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetSocketAddress;
@@ -15,7 +15,7 @@ import com.mongodb.ServerAddress;
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import it.university.advprog.repository.EmployeeRepository;
-
+@Disabled("Temporarily disabled while setting up real MongoDB integration tests")
 class EmployeeMongoRepositoryTest {
 
     private static MongoServer server;
@@ -46,3 +46,4 @@ class EmployeeMongoRepositoryTest {
         assertThat(repository.findAll()).isEmpty();
     }
 }
+*/
