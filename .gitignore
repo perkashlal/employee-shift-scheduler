@@ -1,10 +1,11 @@
-# Maven
-/target/
-
 # Eclipse
-/.classpath
-/.project
-/.settings/
+.classpath
+.project
+.settings/
+.metadata/
+
+# Maven
+target/
 
 # OS
 .DS_Store
