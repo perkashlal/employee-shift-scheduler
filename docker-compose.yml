@@ -1,4 +1,4 @@
-version: "3.8"
+
 
 services:
   mongo:
@@ -6,4 +6,3 @@ services:
     container_name: employee-mongo
     ports:
       - "27017:27017"
-    restart: unless-stopped
