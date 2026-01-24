@@ -43,6 +43,13 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>${mongodb.driver.version}</version>
         </dependency>
+        <dependency>
+    <groupId>org.assertj</groupId>
+    <artifactId>assertj-swing-junit</artifactId>
+    <version>3.17.1</version>
+    <scope>test</scope>
+</dependency>
+
 
     </dependencies>
 
