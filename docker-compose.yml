@@ -1,7 +1,5 @@
-version: "3.8"
-
 services:
-  mongodb:
+  mongo:
     image: mongo:4.4.3
     container_name: employee-mongo
     ports:

@@ -4,22 +4,19 @@ import java.util.Objects;
 
 public class Employee {
 
-    private String id;
-    private String name;
-
-    public Employee() {
-    }
+    private final String id;
+    private final String name;
 
     public Employee(String id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public String getId() {
+    public String id() {
         return id;
     }
 
-    public String getName() {
+    public String name() {
         return name;
     }
 
