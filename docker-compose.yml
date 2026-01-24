@@ -1,0 +1,6 @@
+services:
+  mongo:
+    image: mongo:4.4.3
+    container_name: employee-mongo
+    ports:
+      - "27017:27017"
