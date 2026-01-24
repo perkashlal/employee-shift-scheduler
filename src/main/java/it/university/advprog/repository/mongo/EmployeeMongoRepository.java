@@ -18,8 +18,8 @@ public class EmployeeMongoRepository implements EmployeeRepository {
     private final MongoCollection<Document> collection;
 
     public EmployeeMongoRepository(MongoClient client) {
-        MongoDatabase database = client.getDatabase("employee-db");
-        this.collection = database.getCollection("employees");
+        MongoDatabase database = client.getDatabase(MongoConfig.database());
+        this.collection = database.getCollection(MongoConfig.collection());
     }
 
     @Override
