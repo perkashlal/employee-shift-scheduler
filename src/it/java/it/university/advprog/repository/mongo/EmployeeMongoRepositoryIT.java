@@ -2,6 +2,9 @@ package it.university.advprog.repository.mongo;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+
+import it.university.advprog.Employee;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
