@@ -1,16 +1,17 @@
 package it.university.advprog.repository;
+
 import it.university.advprog.Employee;
+
 import java.util.List;
-
-
+import java.util.Optional;
 
 public interface EmployeeRepository {
 
+    void save(Employee employee);
+
     List<Employee> findAll();
 
-    Employee findById(String id);
-
-    void save(Employee employee);
+    Optional<Employee> findById(String id);
 
     void delete(String id);
 }
