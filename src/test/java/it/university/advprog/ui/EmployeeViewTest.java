@@ -1,9 +1,5 @@
 package it.university.advprog.ui;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import javax.swing.JFrame;
-
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.junit.runner.GUITestRunner;
@@ -18,15 +14,13 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Override
     protected void onSetUp() {
-        JFrame frame = GuiActionRunner.execute(() ->
-            new EmployeeView()
-        );
-        window = new FrameFixture(robot(), frame);
+        EmployeeView view = GuiActionRunner.execute(EmployeeView::new);
+        window = new FrameFixture(robot(), view);
         window.show();
     }
 
     @Test
-    public void should_show_employee_view_window() {
-        assertThat(window.target().isVisible()).isTrue();
+    public void shouldShowEmployeeViewWindow() {
+        window.requireVisible();
     }
 }
