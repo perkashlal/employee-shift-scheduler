@@ -58,6 +58,24 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 		window.textBox("txtEmployeeName").setText("sunil");
 		window.button("btnAddEmployee").requireDisabled();
 		    }
+    @Test
+    public void shouldClearFieldsAndDisableAddButtonAfterAddClick() {
+        
+        window.textBox("txtEmployeeId").enterText("001");
+        window.textBox("txtEmployeeName").enterText("perkash");
+        window.button("btnAddEmployee").requireEnabled();
+
+        
+        window.button("btnAddEmployee").click();
+
+        
+        window.textBox("txtEmployeeId").requireText("");
+        window.textBox("txtEmployeeName").requireText("");
+
+        
+        window.button("btnAddEmployee").requireDisabled();
+    }
+
 		
 		    
 		
