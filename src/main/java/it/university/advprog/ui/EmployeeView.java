@@ -5,6 +5,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.GridLayout;
 
 public class EmployeeView extends JFrame {
@@ -43,6 +45,15 @@ public class EmployeeView extends JFrame {
         btnRemoveEmployee.setName("btnRemoveEmployee");
         btnRemoveEmployee.setEnabled(false);
 
+        DocumentListener enableAddButtonListener = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { updateAddButtonState(); }
+            @Override public void removeUpdate(DocumentEvent e) { updateAddButtonState(); }
+            @Override public void changedUpdate(DocumentEvent e) { updateAddButtonState(); }
+        };
+
+        txtEmployeeId.getDocument().addDocumentListener(enableAddButtonListener);
+        txtEmployeeName.getDocument().addDocumentListener(enableAddButtonListener);
+
         panel.add(lblEmployeeId);
         panel.add(txtEmployeeId);
         panel.add(lblEmployeeName);
@@ -51,5 +62,13 @@ public class EmployeeView extends JFrame {
         panel.add(btnRemoveEmployee);
 
         add(panel);
+    }
+
+    private void updateAddButtonState() {
+        boolean enabled =
+                !txtEmployeeId.getText().trim().isEmpty()
+             && !txtEmployeeName.getText().trim().isEmpty();
+
+        btnAddEmployee.setEnabled(enabled);
     }
 }
