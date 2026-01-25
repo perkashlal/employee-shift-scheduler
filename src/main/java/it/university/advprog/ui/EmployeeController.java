@@ -1,5 +1,5 @@
 package it.university.advprog.ui;
 
-public class EmployeeController {
-
+public interface EmployeeController {
+    void addEmployee(String id, String name);
 }

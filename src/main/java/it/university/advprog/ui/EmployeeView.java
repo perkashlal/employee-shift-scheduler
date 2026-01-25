@@ -1,10 +1,6 @@
 package it.university.advprog.ui;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.JPanel;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.GridLayout;
@@ -17,6 +13,8 @@ public class EmployeeView extends JFrame {
     private JTextField txtEmployeeName;
     private JButton btnAddEmployee;
     private JButton btnRemoveEmployee;
+
+    private EmployeeController employeeController;
 
     public EmployeeView() {
         setTitle("Employee View");
@@ -54,12 +52,20 @@ public class EmployeeView extends JFrame {
         txtEmployeeId.getDocument().addDocumentListener(enableAddButtonListener);
         txtEmployeeName.getDocument().addDocumentListener(enableAddButtonListener);
 
-        // 🔹 NEW: minimal ActionListener for GREEN
         btnAddEmployee.addActionListener(e -> {
+            String id = txtEmployeeId.getText();
+            String name = txtEmployeeName.getText();
+
+            if (employeeController != null) {
+                employeeController.addEmployee(id, name);
+            }
+
+            
             txtEmployeeId.setText("");
             txtEmployeeName.setText("");
-            updateAddButtonState(); // disables the button again
+            updateAddButtonState();
         });
+
 
         panel.add(lblEmployeeId);
         panel.add(txtEmployeeId);
@@ -77,5 +83,10 @@ public class EmployeeView extends JFrame {
              && !txtEmployeeName.getText().trim().isEmpty();
 
         btnAddEmployee.setEnabled(enabled);
+    }
+
+    
+    public void setEmployeeController(EmployeeController controller) {
+        this.employeeController = controller;
     }
 }
