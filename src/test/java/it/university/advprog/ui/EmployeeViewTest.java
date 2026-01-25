@@ -23,4 +23,16 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
     public void shouldShowEmployeeViewWindow() {
         window.requireVisible();
     }
+
+    @Test
+    public void shouldHaveInitialControlsDisabledOrEnabledCorrectly() {
+        window.label("lblEmployeeId").requireText("Employee ID");
+        window.label("lblEmployeeName").requireText("Employee Name");
+
+        window.textBox("txtEmployeeId").requireEnabled();
+        window.textBox("txtEmployeeName").requireEnabled();
+
+        window.button("btnAddEmployee").requireDisabled();
+        window.button("btnRemoveEmployee").requireDisabled();
+    }
 }
