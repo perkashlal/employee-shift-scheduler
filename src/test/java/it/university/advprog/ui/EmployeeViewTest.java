@@ -73,9 +73,31 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.textBox("txtEmployeeName").requireText("");
         window.button("btnAddEmployee").requireDisabled();
     }
+
+    @Test
+    public void shouldDelegateAddEmployeeToController() {
+        EmployeeController controller = Mockito.mock(EmployeeController.class);
+
+        EmployeeView view = GuiActionRunner.execute(() -> {
+            EmployeeView v = new EmployeeView();
+            v.setEmployeeController(controller);
+            return v;
+        });
+
+        window = new FrameFixture(robot(), view);
+        window.show();
+
+        window.textBox("txtEmployeeId").enterText("001");
+        window.textBox("txtEmployeeName").enterText("Pika's");
+
+        window.button("btnAddEmployee").click();
+
+        verify(controller).addEmployee("001", "Pika's");
+    }
+
     @Test
     public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
-        EmployeeController controller = org.mockito.Mockito.mock(EmployeeController.class);
+        EmployeeController controller = Mockito.mock(EmployeeController.class);
 
         EmployeeView view = GuiActionRunner.execute(() -> {
             EmployeeView v = new EmployeeView();
@@ -87,33 +109,14 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.show();
 
         window.textBox("txtEmployeeId").enterText("007");
-        window.textBox("txtEmployeeName").enterText("Jimmy");
+
+        // Enable delete button explicitly for this test (book-aligned)
+        GuiActionRunner.execute(() ->
+            view.getBtnRemoveEmployee().setEnabled(true)
+        );
 
         window.button("btnRemoveEmployee").click();
 
-        org.mockito.Mockito.verify(controller).removeEmployee("007");
-    }
-
-
-    @Test
-    public void shouldDelegateAddEmployeeToController() {
-        EmployeeController controller = Mockito.mock(EmployeeController.class);
-
-        EmployeeView view = GuiActionRunner.execute(() -> {
-            EmployeeView v = new EmployeeView();
-            v.setEmployeeController(controller);
-            return v;
-        });
-        
-
-        window = new FrameFixture(robot(), view);
-        window.show();
-
-        window.textBox("txtEmployeeId").enterText("001");
-        window.textBox("txtEmployeeName").enterText("Pika's");
-
-        window.button("btnAddEmployee").click();
-
-        verify(controller).addEmployee("001", "Pika's");
+        verify(controller).removeEmployee("007");
     }
 }

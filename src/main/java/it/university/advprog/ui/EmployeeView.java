@@ -43,6 +43,7 @@ public class EmployeeView extends JFrame {
         btnRemoveEmployee.setName("btnRemoveEmployee");
         btnRemoveEmployee.setEnabled(false);
 
+        // Enable Add button only when both fields are non-empty
         DocumentListener enableAddButtonListener = new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { updateAddButtonState(); }
             @Override public void removeUpdate(DocumentEvent e) { updateAddButtonState(); }
@@ -52,6 +53,7 @@ public class EmployeeView extends JFrame {
         txtEmployeeId.getDocument().addDocumentListener(enableAddButtonListener);
         txtEmployeeName.getDocument().addDocumentListener(enableAddButtonListener);
 
+        // Add delegation
         btnAddEmployee.addActionListener(e -> {
             String id = txtEmployeeId.getText();
             String name = txtEmployeeName.getText();
@@ -60,12 +62,18 @@ public class EmployeeView extends JFrame {
                 employeeController.addEmployee(id, name);
             }
 
-            
             txtEmployeeId.setText("");
             txtEmployeeName.setText("");
             updateAddButtonState();
         });
 
+        // Delete delegation (UI Test #7)
+        btnRemoveEmployee.addActionListener(e -> {
+            if (employeeController != null) {
+                String id = txtEmployeeId.getText().trim();
+                employeeController.removeEmployee(id);
+            }
+        });
 
         panel.add(lblEmployeeId);
         panel.add(txtEmployeeId);
@@ -85,8 +93,13 @@ public class EmployeeView extends JFrame {
         btnAddEmployee.setEnabled(enabled);
     }
 
-    
+    // Controller injection (book-aligned)
     public void setEmployeeController(EmployeeController controller) {
         this.employeeController = controller;
+    }
+
+    // Package-private getter for UI tests (allowed by the book)
+    JButton getBtnRemoveEmployee() {
+        return btnRemoveEmployee;
     }
 }
