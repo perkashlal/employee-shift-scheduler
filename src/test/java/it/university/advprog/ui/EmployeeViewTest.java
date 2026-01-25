@@ -75,6 +75,22 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         
         window.button("btnAddEmployee").requireDisabled();
     }
+    @Test
+    public void shouldDelegateAddEmployeeToController() {
+        EmployeeController controller = org.mockito.Mockito.mock(EmployeeController.class);
+
+        EmployeeView view = GuiActionRunner.execute(() -> new EmployeeView(controller));
+        window = new FrameFixture(robot(), view);
+        window.show();
+
+        window.textBox("txtEmployeeId").enterText("001");
+        window.textBox("txtEmployeeName").enterText("Pika's");
+
+        window.button("btnAddEmployee").click();
+
+        org.mockito.Mockito.verify(controller)
+                .addEmployee("001", "pika's");
+    }
 
 		
 		    
