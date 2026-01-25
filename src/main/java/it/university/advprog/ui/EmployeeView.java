@@ -43,11 +43,13 @@ public class EmployeeView extends JFrame {
         btnRemoveEmployee.setName("btnRemoveEmployee");
         btnRemoveEmployee.setEnabled(false);
 
-        // Enable Add button only when both fields are non-empty
         DocumentListener enableAddButtonListener = new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { updateAddButtonState(); }
-            @Override public void removeUpdate(DocumentEvent e) { updateAddButtonState(); }
-            @Override public void changedUpdate(DocumentEvent e) { updateAddButtonState(); }
+            @Override public void insertUpdate(DocumentEvent e) { updateAddButtonState();
+            updateDeleteButtonState();}
+            @Override public void removeUpdate(DocumentEvent e) { updateAddButtonState();
+            updateDeleteButtonState();}
+            @Override public void changedUpdate(DocumentEvent e) { updateAddButtonState(); 
+            updateDeleteButtonState();}
         };
 
         txtEmployeeId.getDocument().addDocumentListener(enableAddButtonListener);
@@ -92,13 +94,16 @@ public class EmployeeView extends JFrame {
 
         btnAddEmployee.setEnabled(enabled);
     }
+    private void updateDeleteButtonState() {
+        boolean enabled = !txtEmployeeId.getText().trim().isEmpty();
+        btnRemoveEmployee.setEnabled(enabled);
+    }
 
-    // Controller injection (book-aligned)
+
     public void setEmployeeController(EmployeeController controller) {
         this.employeeController = controller;
     }
 
-    // Package-private getter for UI tests (allowed by the book)
     JButton getBtnRemoveEmployee() {
         return btnRemoveEmployee;
     }
