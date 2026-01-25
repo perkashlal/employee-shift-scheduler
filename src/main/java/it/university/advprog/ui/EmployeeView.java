@@ -54,6 +54,13 @@ public class EmployeeView extends JFrame {
         txtEmployeeId.getDocument().addDocumentListener(enableAddButtonListener);
         txtEmployeeName.getDocument().addDocumentListener(enableAddButtonListener);
 
+        // 🔹 NEW: minimal ActionListener for GREEN
+        btnAddEmployee.addActionListener(e -> {
+            txtEmployeeId.setText("");
+            txtEmployeeName.setText("");
+            updateAddButtonState(); // disables the button again
+        });
+
         panel.add(lblEmployeeId);
         panel.add(txtEmployeeId);
         panel.add(lblEmployeeName);
