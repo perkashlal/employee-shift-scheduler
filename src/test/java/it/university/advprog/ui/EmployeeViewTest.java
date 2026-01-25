@@ -73,6 +73,27 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.textBox("txtEmployeeName").requireText("");
         window.button("btnAddEmployee").requireDisabled();
     }
+    @Test
+    public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
+        EmployeeController controller = org.mockito.Mockito.mock(EmployeeController.class);
+
+        EmployeeView view = GuiActionRunner.execute(() -> {
+            EmployeeView v = new EmployeeView();
+            v.setEmployeeController(controller);
+            return v;
+        });
+
+        window = new FrameFixture(robot(), view);
+        window.show();
+
+        window.textBox("txtEmployeeId").enterText("007");
+        window.textBox("txtEmployeeName").enterText("Jimmy");
+
+        window.button("btnRemoveEmployee").click();
+
+        org.mockito.Mockito.verify(controller).removeEmployee("007");
+    }
+
 
     @Test
     public void shouldDelegateAddEmployeeToController() {
@@ -83,6 +104,7 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
             v.setEmployeeController(controller);
             return v;
         });
+        
 
         window = new FrameFixture(robot(), view);
         window.show();
