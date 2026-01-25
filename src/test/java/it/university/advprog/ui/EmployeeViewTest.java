@@ -35,4 +35,12 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.button("btnAddEmployee").requireDisabled();
         window.button("btnRemoveEmployee").requireDisabled();
     }
+    @Test
+    public void shouldEnableAddButtonWhenIdAndNameAreProvided() {
+        window.textBox("txtEmployeeId").enterText("002");
+        window.textBox("txtEmployeeName").enterText("perkash");
+
+        window.button("btnAddEmployee").requireEnabled();
+    }
+
 }
