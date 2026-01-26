@@ -24,13 +24,13 @@ public class Employee {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Employee)) return false;
-        Employee employee = (Employee) o;
-        return Objects.equals(id, employee.id)
-                && Objects.equals(name, employee.name);
+        Employee that = (Employee) o;
+        return id.equals(that.id) && name.equals(that.name);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(id, name);
     }
+
 }
