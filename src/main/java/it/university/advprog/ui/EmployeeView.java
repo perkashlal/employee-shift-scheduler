@@ -7,6 +7,8 @@ import java.awt.GridLayout;
 
 public class EmployeeView extends JFrame {
 
+    private static final long serialVersionUID = 1L;
+
     private JLabel lblEmployeeId;
     private JLabel lblEmployeeName;
     private JTextField txtEmployeeId;
@@ -16,11 +18,20 @@ public class EmployeeView extends JFrame {
 
     private EmployeeController employeeController;
 
+    
     public EmployeeView() {
         setTitle("Employee View");
-        setSize(400, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        initUI();
+        initListeners();
+
+        pack();
+        setLocationRelativeTo(null);
+    }
+
+    
+    private void initUI() {
         JPanel panel = new JPanel(new GridLayout(3, 2));
 
         lblEmployeeId = new JLabel("Employee ID");
@@ -43,40 +54,6 @@ public class EmployeeView extends JFrame {
         btnRemoveEmployee.setName("btnRemoveEmployee");
         btnRemoveEmployee.setEnabled(false);
 
-        DocumentListener enableAddButtonListener = new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { updateAddButtonState();
-            updateDeleteButtonState();}
-            @Override public void removeUpdate(DocumentEvent e) { updateAddButtonState();
-            updateDeleteButtonState();}
-            @Override public void changedUpdate(DocumentEvent e) { updateAddButtonState(); 
-            updateDeleteButtonState();}
-        };
-
-        txtEmployeeId.getDocument().addDocumentListener(enableAddButtonListener);
-        txtEmployeeName.getDocument().addDocumentListener(enableAddButtonListener);
-
-        // Add delegation
-        btnAddEmployee.addActionListener(e -> {
-            String id = txtEmployeeId.getText();
-            String name = txtEmployeeName.getText();
-
-            if (employeeController != null) {
-                employeeController.addEmployee(id, name);
-            }
-
-            txtEmployeeId.setText("");
-            txtEmployeeName.setText("");
-            updateAddButtonState();
-        });
-
-        // Delete delegation (UI Test #7)
-        btnRemoveEmployee.addActionListener(e -> {
-            if (employeeController != null) {
-                String id = txtEmployeeId.getText().trim();
-                employeeController.removeEmployee(id);
-            }
-        });
-
         panel.add(lblEmployeeId);
         panel.add(txtEmployeeId);
         panel.add(lblEmployeeName);
@@ -87,24 +64,51 @@ public class EmployeeView extends JFrame {
         add(panel);
     }
 
-    private void updateAddButtonState() {
-        boolean enabled =
-                !txtEmployeeId.getText().trim().isEmpty()
-             && !txtEmployeeName.getText().trim().isEmpty();
+    
+    private void initListeners() {
+        DocumentListener fieldListener = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { updateButtonStates(); }
+            @Override public void removeUpdate(DocumentEvent e) { updateButtonStates(); }
+            @Override public void changedUpdate(DocumentEvent e) { updateButtonStates(); }
+        };
 
-        btnAddEmployee.setEnabled(enabled);
+        txtEmployeeId.getDocument().addDocumentListener(fieldListener);
+        txtEmployeeName.getDocument().addDocumentListener(fieldListener);
+
+        btnAddEmployee.addActionListener(e -> handleAddEmployee());
+        btnRemoveEmployee.addActionListener(e -> handleRemoveEmployee());
     }
-    private void updateDeleteButtonState() {
-        boolean enabled = !txtEmployeeId.getText().trim().isEmpty();
-        btnRemoveEmployee.setEnabled(enabled);
+
+   
+    private void updateButtonStates() {
+        boolean hasId = !txtEmployeeId.getText().trim().isEmpty();
+        boolean hasName = !txtEmployeeName.getText().trim().isEmpty();
+
+        btnAddEmployee.setEnabled(hasId && hasName);
+        btnRemoveEmployee.setEnabled(hasId);
     }
 
+    private void handleAddEmployee() {
+        if (employeeController != null) {
+            employeeController.addEmployee(
+                    txtEmployeeId.getText(),
+                    txtEmployeeName.getText()
+            );
+        }
 
+        txtEmployeeId.setText("");
+        txtEmployeeName.setText("");
+        updateButtonStates();
+    }
+
+    private void handleRemoveEmployee() {
+        if (employeeController != null) {
+            employeeController.removeEmployee(txtEmployeeId.getText());
+        }
+    }
+
+  
     public void setEmployeeController(EmployeeController controller) {
         this.employeeController = controller;
-    }
-
-    JButton getBtnRemoveEmployee() {
-        return btnRemoveEmployee;
     }
 }

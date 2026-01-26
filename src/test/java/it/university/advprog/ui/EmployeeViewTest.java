@@ -94,21 +94,17 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
         verify(controller).addEmployee("001", "Pika's");
     }
+
     @Test
     public void shouldEnableDeleteButtonOnlyWhenEmployeeIdIsProvided() {
-
-        
         window.button("btnRemoveEmployee").requireDisabled();
 
         window.textBox("txtEmployeeId").enterText("123");
-
         window.button("btnRemoveEmployee").requireEnabled();
 
         window.textBox("txtEmployeeId").setText("");
-
         window.button("btnRemoveEmployee").requireDisabled();
     }
-
 
     @Test
     public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
@@ -119,19 +115,11 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
             v.setEmployeeController(controller);
             return v;
         });
-        
-        
-        
 
         window = new FrameFixture(robot(), view);
         window.show();
 
         window.textBox("txtEmployeeId").enterText("007");
-
-        // Enable delete button explicitly for this test (book-aligned)
-        GuiActionRunner.execute(() ->
-            view.getBtnRemoveEmployee().setEnabled(true)
-        );
 
         window.button("btnRemoveEmployee").click();
 
