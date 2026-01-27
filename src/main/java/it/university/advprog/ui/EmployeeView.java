@@ -1,11 +1,13 @@
 package it.university.advprog.ui;
 
+import it.university.advprog.Employee;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.GridLayout;
 
-public class EmployeeView extends JFrame {
+public class EmployeeView extends JFrame implements EmployeeViewInterface {
 
     private static final long serialVersionUID = 1L;
 
@@ -18,7 +20,6 @@ public class EmployeeView extends JFrame {
 
     private EmployeeController employeeController;
 
-    
     public EmployeeView() {
         setTitle("Employee View");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -30,7 +31,6 @@ public class EmployeeView extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    
     private void initUI() {
         JPanel panel = new JPanel(new GridLayout(3, 2));
 
@@ -64,7 +64,6 @@ public class EmployeeView extends JFrame {
         add(panel);
     }
 
-    
     private void initListeners() {
         DocumentListener fieldListener = new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { updateButtonStates(); }
@@ -79,7 +78,6 @@ public class EmployeeView extends JFrame {
         btnRemoveEmployee.addActionListener(e -> handleRemoveEmployee());
     }
 
-   
     private void updateButtonStates() {
         boolean hasId = !txtEmployeeId.getText().trim().isEmpty();
         boolean hasName = !txtEmployeeName.getText().trim().isEmpty();
@@ -107,8 +105,21 @@ public class EmployeeView extends JFrame {
         }
     }
 
-  
+    @Override
     public void setEmployeeController(EmployeeController controller) {
         this.employeeController = controller;
+    }
+
+    @Override
+    public void employeeAdded(Employee employee) {
+    }
+
+    @Override
+    public void employeeRemoved(String id) {
+       
+    }
+
+    @Override
+    public void showError(String message) {
     }
 }

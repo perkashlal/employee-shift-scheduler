@@ -1,39 +1,44 @@
 package it.university.advprog.ui;
 
-import static org.mockito.Mockito.verify;
-
 import it.university.advprog.Employee;
 import it.university.advprog.repository.EmployeeRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.*;
 
+class EmployeeControllerImplTest {
 
-public class EmployeeControllerImplTest {
-
+    @Mock
     private EmployeeRepository repository;
+
+    @Mock
+    private EmployeeViewInterface view;
+
     private EmployeeControllerImpl controller;
 
-    @Before
-    public void setUp() {
-        repository = Mockito.mock(EmployeeRepository.class);
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
         controller = new EmployeeControllerImpl(repository);
+        controller.setEmployeeView(view);
     }
 
     @Test
-    public void shouldDelegateAddEmployeeToRepository() {
-       
-        controller.addEmployee("001", "Alice");
+    void shouldDelegateAddEmployeeToRepository() {
+        controller.addEmployee("1", "Alice");
 
-        verify(repository).save(new Employee("001", "Alice"));
+        verify(repository).save(new Employee("1", "Alice"));
+        verify(view).employeeAdded(new Employee("1", "Alice"));
     }
 
     @Test
-    public void shouldDelegateRemoveEmployeeToRepository() {
-        
-        controller.removeEmployee("001");
+    void shouldDelegateRemoveEmployeeToRepository() {
+        controller.removeEmployee("1");
 
-        verify(repository).delete("001");
+        verify(repository).delete("1");
+        verify(view).employeeRemoved("1");
     }
 }
