@@ -48,5 +48,15 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
         for (Employee employee : employeeRepository.findAll()) {
             employeeRepository.delete(employee.id());
         }
+
+        employeeView = new EmployeeView();
+
+        employeeController = new EmployeeControllerImpl(employeeRepository);
+        employeeController.setEmployeeView(employeeView);
+
+        employeeView.setEmployeeController(employeeController);
+
+        window = new FrameFixture(robot(), employeeView);
+        window.show();
     }
 }
