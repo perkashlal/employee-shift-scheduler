@@ -1,4 +1,5 @@
 package it.university.advprog.ui;
+
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import de.bwaldvogel.mongo.MongoServer;
@@ -74,5 +75,16 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
         assertThat(employeeRepository.findById("1"))
                 .isPresent()
                 .contains(new Employee("1", "Alice"));
+    }
+
+    @Test
+    public void testRemoveEmployeeThroughUI() {
+        employeeRepository.save(new Employee("2", "Bob"));
+
+        window.textBox("txtEmployeeId").enterText("2");
+
+        window.button("btnRemoveEmployee").click();
+
+        assertThat(employeeRepository.findById("2")).isEmpty();
     }
 }
