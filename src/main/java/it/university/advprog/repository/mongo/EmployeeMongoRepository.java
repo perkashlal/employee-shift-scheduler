@@ -7,59 +7,48 @@ import it.university.advprog.Employee;
 import it.university.advprog.repository.EmployeeRepository;
 import org.bson.Document;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.mongodb.client.model.Filters.eq;
+import static java.util.stream.Collectors.toList;
 
 public class EmployeeMongoRepository implements EmployeeRepository {
 
     private final MongoCollection<Document> collection;
 
-    public EmployeeMongoRepository(MongoClient client) {
-        MongoDatabase database = client.getDatabase(MongoConfig.database());
-        this.collection = database.getCollection(MongoConfig.collection());
+    public EmployeeMongoRepository(
+            MongoClient client,
+            String databaseName,
+            String collectionName
+    ) {
+        MongoDatabase db = client.getDatabase(databaseName);
+        this.collection = db.getCollection(collectionName);
     }
 
     @Override
     public void save(Employee employee) {
-        Document doc = new Document()
+        collection.insertOne(new Document()
                 .append("_id", employee.id())
-                .append("name", employee.name());
-
-        collection.insertOne(doc);
-    }
-
-    @Override
-    public List<Employee> findAll() {
-        List<Employee> result = new ArrayList<>();
-
-        for (Document doc : collection.find()) {
-            result.add(new Employee(
-                    doc.getString("_id"),
-                    doc.getString("name")
-            ));
-        }
-        return result;
+                .append("name", employee.name()));
     }
 
     @Override
     public Optional<Employee> findById(String id) {
-        Document doc = collection.find(eq("_id", id)).first();
+        Document doc = collection.find(new Document("_id", id)).first();
+        return doc == null
+                ? Optional.empty()
+                : Optional.of(new Employee(doc.getString("_id"), doc.getString("name")));
+    }
 
-        if (doc == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new Employee(
-                doc.getString("_id"),
-                doc.getString("name")
-        ));
+    @Override
+    public List<Employee> findAll() {
+        return collection.find().map(
+                d -> new Employee(d.getString("_id"), d.getString("name"))
+        ).into(new java.util.ArrayList<>());
     }
 
     @Override
     public void delete(String id) {
-        collection.deleteOne(eq("_id", id));
+        collection.deleteOne(new Document("_id", id));
     }
 }
