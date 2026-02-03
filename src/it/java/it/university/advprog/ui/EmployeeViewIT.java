@@ -1,90 +1,90 @@
 package it.university.advprog.ui;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import de.bwaldvogel.mongo.MongoServer;
-import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
-import it.university.advprog.Employee;
-import it.university.advprog.repository.EmployeeRepository;
-import it.university.advprog.repository.mongo.EmployeeMongoRepository;
-import org.assertj.swing.edt.GuiActionRunner;
-import org.assertj.swing.fixture.FrameFixture;
-import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetSocketAddress;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.assertj.swing.edt.GuiActionRunner;
+import org.assertj.swing.fixture.FrameFixture;
+import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
+import org.junit.Test;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+
+import de.bwaldvogel.mongo.MongoServer;
+import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
+
+import it.university.advprog.Employee;
+import it.university.advprog.repository.EmployeeRepository;
+import it.university.advprog.repository.mongo.EmployeeMongoRepository;
 
 public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
 
-    private static MongoServer server;
-    private static InetSocketAddress serverAddress;
+    private static final String DB_NAME = "employee-view-it";
+    private static final String COLLECTION = "employees";
 
+    private MongoServer mongoServer;
     private MongoClient mongoClient;
-    private EmployeeRepository employeeRepository;
+    private EmployeeRepository repository;
 
     private FrameFixture window;
-    private EmployeeView employeeView;
-    private EmployeeController employeeController;
-
-    @BeforeClass
-    public static void setupServer() {
-        server = new MongoServer(new MemoryBackend());
-        serverAddress = server.bind();
-    }
-
-    @AfterClass
-    public static void shutdownServer() {
-        server.shutdown();
-    }
 
     @Override
     protected void onSetUp() {
+        mongoServer = new MongoServer(new MemoryBackend());
+        InetSocketAddress address = mongoServer.bind();
+
         mongoClient = MongoClients.create(
-                "mongodb://" + serverAddress.getHostName() + ":" + serverAddress.getPort()
+                "mongodb://" + address.getHostName() + ":" + address.getPort()
         );
 
-        employeeRepository = new EmployeeMongoRepository(mongoClient);
+        mongoClient.getDatabase(DB_NAME).drop();
 
-        for (Employee employee : employeeRepository.findAll()) {
-            employeeRepository.delete(employee.id());
-        }
+        repository = new EmployeeMongoRepository(
+                mongoClient,
+                DB_NAME,
+                COLLECTION
+        );
 
-        employeeView = GuiActionRunner.execute(() -> {
-            EmployeeView view = new EmployeeView();
-            employeeController = new EmployeeControllerImpl(employeeRepository);
-            employeeController.setEmployeeView(view);
-            view.setEmployeeController(employeeController);
-            return view;
+        EmployeeView view = GuiActionRunner.execute(() -> {
+            EmployeeView v = new EmployeeView();
+            EmployeeController controller =
+                    new EmployeeControllerImpl(repository);
+            controller.setEmployeeView(v);
+            v.setEmployeeController(controller);
+            return v;
         });
 
-        window = new FrameFixture(robot(), employeeView);
+        window = new FrameFixture(robot(), view);
         window.show();
     }
 
-    @Test
-    public void testAddEmployeeThroughUI() {
-        window.textBox("txtEmployeeId").enterText("1");
-        window.textBox("txtEmployeeName").enterText("Alice");
+    @Override
+    protected void onTearDown() {
+        window.cleanUp();
+        mongoClient.close();
+        mongoServer.shutdown();
+    }
 
+    @Test
+    public void shouldAddEmployeeThroughUI() {
+        window.textBox("txtEmployeeId").setText("1");
+        window.textBox("txtEmployeeName").setText("Alice");
         window.button("btnAddEmployee").click();
 
-        assertThat(employeeRepository.findById("1"))
+        assertThat(repository.findById("1"))
                 .isPresent()
                 .contains(new Employee("1", "Alice"));
     }
 
     @Test
-    public void testRemoveEmployeeThroughUI() {
-        employeeRepository.save(new Employee("2", "Bob"));
+    public void shouldRemoveEmployeeThroughUI() {
+        repository.save(new Employee("2", "Bob"));
 
-        window.textBox("txtEmployeeId").enterText("2");
-
+        window.textBox("txtEmployeeId").setText("2");
         window.button("btnRemoveEmployee").click();
 
-        assertThat(employeeRepository.findById("2")).isEmpty();
+        assertThat(repository.findById("2")).isEmpty();
     }
 }

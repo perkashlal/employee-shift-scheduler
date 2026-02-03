@@ -8,24 +8,29 @@ import com.mongodb.client.MongoClients;
 import it.university.advprog.Employee;
 import it.university.advprog.repository.EmployeeRepository;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
+@Testcontainers
 class EmployeeMongoRepositoryIT {
 
     private static final String DB_NAME = "employee-repository-it";
     private static final String COLLECTION = "employees";
 
-    private MongoClient mongoClient;
-    private EmployeeRepository repository;
+    @Container
+    static MongoDBContainer mongo =
+            new MongoDBContainer("mongo:4.4.3");
 
-    @BeforeEach
-    void setUp() {
-        mongoClient = MongoClients.create("mongodb://localhost:27017");
+    private static MongoClient mongoClient;
+    private static EmployeeRepository repository;
 
-        // IMPORTANT: clean DB before each test
-        mongoClient.getDatabase(DB_NAME).drop();
+    @BeforeAll
+    static void setUp() {
+        mongoClient = MongoClients.create(mongo.getConnectionString());
 
         repository = new EmployeeMongoRepository(
                 mongoClient,
@@ -34,9 +39,8 @@ class EmployeeMongoRepositoryIT {
         );
     }
 
-    @AfterEach
-    void tearDown() {
-        mongoClient.getDatabase(DB_NAME).drop();
+    @AfterAll
+    static void tearDown() {
         mongoClient.close();
     }
 
@@ -48,6 +52,6 @@ class EmployeeMongoRepositoryIT {
 
         assertThat(repository.findAll())
                 .hasSize(1)
-                .contains(employee);
+                .containsExactly(employee);
     }
 }

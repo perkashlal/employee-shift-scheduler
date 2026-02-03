@@ -87,8 +87,8 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window = new FrameFixture(robot(), view);
         window.show();
 
-        window.textBox("txtEmployeeId").enterText("001");
-        window.textBox("txtEmployeeName").enterText("Pika's");
+        window.textBox("txtEmployeeId").setText("001");
+        window.textBox("txtEmployeeName").setText("Pika's");
 
         window.button("btnAddEmployee").click();
 
@@ -99,7 +99,7 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
     public void shouldEnableDeleteButtonOnlyWhenEmployeeIdIsProvided() {
         window.button("btnRemoveEmployee").requireDisabled();
 
-        window.textBox("txtEmployeeId").enterText("123");
+        window.textBox("txtEmployeeId").setText("123");
         window.button("btnRemoveEmployee").requireEnabled();
 
         window.textBox("txtEmployeeId").setText("");
@@ -119,7 +119,7 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window = new FrameFixture(robot(), view);
         window.show();
 
-        window.textBox("txtEmployeeId").enterText("007");
+        window.textBox("txtEmployeeId").setText("007");
 
         window.button("btnRemoveEmployee").click();
 

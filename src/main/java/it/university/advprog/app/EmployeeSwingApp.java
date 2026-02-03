@@ -2,6 +2,7 @@ package it.university.advprog.app;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+
 import it.university.advprog.repository.EmployeeRepository;
 import it.university.advprog.repository.mongo.EmployeeMongoRepository;
 import it.university.advprog.ui.EmployeeController;
@@ -12,6 +13,9 @@ import javax.swing.SwingUtilities;
 
 public class EmployeeSwingApp {
 
+    private static final String DB_NAME = "employee-db";
+    private static final String COLLECTION = "employees";
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
@@ -19,7 +23,11 @@ public class EmployeeSwingApp {
                         MongoClients.create("mongodb://localhost:27017");
 
                 EmployeeRepository employeeRepository =
-                        new EmployeeMongoRepository(mongoClient);
+                        new EmployeeMongoRepository(
+                                mongoClient,
+                                DB_NAME,
+                                COLLECTION
+                        );
 
                 EmployeeView employeeView = new EmployeeView();
 
