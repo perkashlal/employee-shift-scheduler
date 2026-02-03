@@ -9,117 +9,137 @@ import java.awt.GridLayout;
 
 public class EmployeeView extends JFrame implements EmployeeViewInterface {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private JLabel lblEmployeeId;
-    private JLabel lblEmployeeName;
-    private JTextField txtEmployeeId;
-    private JTextField txtEmployeeName;
-    private JButton btnAddEmployee;
-    private JButton btnRemoveEmployee;
+	private JLabel lblEmployeeId;
+	private JLabel lblEmployeeName;
+	private JTextField txtEmployeeId;
+	private JTextField txtEmployeeName;
+	private JButton btnAddEmployee;
+	private JButton btnRemoveEmployee;
 
-    private EmployeeController employeeController;
+	private EmployeeController employeeController;
 
-    public EmployeeView() {
-        setTitle("Employee View");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public EmployeeView() {
+		this(null);
+	}
 
-        initUI();
-        initListeners();
+	public EmployeeView(EmployeeController controller) {
+		this.employeeController = controller;
 
-        pack();
-        setLocationRelativeTo(null);
-    }
+		setName("employeeView");
+		setTitle("Employee View");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    private void initUI() {
-        JPanel panel = new JPanel(new GridLayout(3, 2));
+		initUI();
+		initListeners();
+		updateButtonStates();
 
-        lblEmployeeId = new JLabel("Employee ID");
-        lblEmployeeId.setName("lblEmployeeId");
+		pack();
+		setLocationRelativeTo(null);
+	}
 
-        lblEmployeeName = new JLabel("Employee Name");
-        lblEmployeeName.setName("lblEmployeeName");
+	private void initUI() {
+		JPanel panel = new JPanel(new GridLayout(3, 2));
 
-        txtEmployeeId = new JTextField();
-        txtEmployeeId.setName("txtEmployeeId");
+		lblEmployeeId = new JLabel("Employee ID");
+		lblEmployeeId.setName("lblEmployeeId");
 
-        txtEmployeeName = new JTextField();
-        txtEmployeeName.setName("txtEmployeeName");
+		lblEmployeeName = new JLabel("Employee Name");
+		lblEmployeeName.setName("lblEmployeeName");
 
-        btnAddEmployee = new JButton("Add Employee");
-        btnAddEmployee.setName("btnAddEmployee");
-        btnAddEmployee.setEnabled(false);
+		txtEmployeeId = new JTextField();
+		txtEmployeeId.setName("txtEmployeeId");
 
-        btnRemoveEmployee = new JButton("Remove Employee");
-        btnRemoveEmployee.setName("btnRemoveEmployee");
-        btnRemoveEmployee.setEnabled(false);
+		txtEmployeeName = new JTextField();
+		txtEmployeeName.setName("txtEmployeeName");
 
-        panel.add(lblEmployeeId);
-        panel.add(txtEmployeeId);
-        panel.add(lblEmployeeName);
-        panel.add(txtEmployeeName);
-        panel.add(btnAddEmployee);
-        panel.add(btnRemoveEmployee);
+		btnAddEmployee = new JButton("Add Employee");
+		btnAddEmployee.setName("btnAddEmployee");
 
-        add(panel);
-    }
+		btnRemoveEmployee = new JButton("Remove Employee");
+		btnRemoveEmployee.setName("btnRemoveEmployee");
 
-    private void initListeners() {
-        DocumentListener fieldListener = new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { updateButtonStates(); }
-            @Override public void removeUpdate(DocumentEvent e) { updateButtonStates(); }
-            @Override public void changedUpdate(DocumentEvent e) { updateButtonStates(); }
-        };
+		panel.add(lblEmployeeId);
+		panel.add(txtEmployeeId);
+		panel.add(lblEmployeeName);
+		panel.add(txtEmployeeName);
+		panel.add(btnAddEmployee);
+		panel.add(btnRemoveEmployee);
 
-        txtEmployeeId.getDocument().addDocumentListener(fieldListener);
-        txtEmployeeName.getDocument().addDocumentListener(fieldListener);
+		setContentPane(panel);
+	}
 
-        btnAddEmployee.addActionListener(e -> handleAddEmployee());
-        btnRemoveEmployee.addActionListener(e -> handleRemoveEmployee());
-    }
+	private void initListeners() {
+		DocumentListener fieldListener = new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				updateButtonStates();
+			}
 
-    private void updateButtonStates() {
-        boolean hasId = !txtEmployeeId.getText().trim().isEmpty();
-        boolean hasName = !txtEmployeeName.getText().trim().isEmpty();
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				updateButtonStates();
+			}
 
-        btnAddEmployee.setEnabled(hasId && hasName);
-        btnRemoveEmployee.setEnabled(hasId);
-    }
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				updateButtonStates();
+			}
+		};
 
-    private void handleAddEmployee() {
-        if (employeeController != null) {
-            employeeController.addEmployee(
-                    txtEmployeeId.getText(),
-                    txtEmployeeName.getText()
-            );
-        }
+		txtEmployeeId.getDocument().addDocumentListener(fieldListener);
+		txtEmployeeName.getDocument().addDocumentListener(fieldListener);
 
-        txtEmployeeId.setText("");
-        txtEmployeeName.setText("");
-        updateButtonStates();
-    }
+		btnAddEmployee.addActionListener(e -> handleAddEmployee());
+		btnRemoveEmployee.addActionListener(e -> handleRemoveEmployee());
+	}
 
-    private void handleRemoveEmployee() {
-        if (employeeController != null) {
-            employeeController.removeEmployee(txtEmployeeId.getText());
-        }
-    }
+	private void updateButtonStates() {
+		boolean hasId = !txtEmployeeId.getText().trim().isEmpty();
+		boolean hasName = !txtEmployeeName.getText().trim().isEmpty();
 
-    @Override
-    public void setEmployeeController(EmployeeController controller) {
-        this.employeeController = controller;
-    }
+		btnAddEmployee.setEnabled(hasId && hasName);
+		btnRemoveEmployee.setEnabled(hasId);
+	}
 
-    @Override
-    public void employeeAdded(Employee employee) {
-    }
+	private void handleAddEmployee() {
+		String id = txtEmployeeId.getText().trim();
+		String name = txtEmployeeName.getText().trim();
 
-    @Override
-    public void employeeRemoved(String id) {
-       
-    }
+		if (employeeController != null) {
+			employeeController.addEmployee(id, name);
+		}
 
-    @Override
-    public void showError(String message) {
-    }
+		txtEmployeeId.setText("");
+		txtEmployeeName.setText("");
+		updateButtonStates();
+	}
+
+	private void handleRemoveEmployee() {
+		String id = txtEmployeeId.getText().trim();
+
+		if (employeeController != null) {
+			employeeController.removeEmployee(id);
+		}
+
+		updateButtonStates();
+	}
+
+	@Override
+	public void setEmployeeController(EmployeeController controller) {
+		this.employeeController = controller;
+	}
+
+	@Override
+	public void employeeAdded(Employee employee) {
+	}
+
+	@Override
+	public void employeeRemoved(String id) {
+	}
+
+	@Override
+	public void showError(String message) {
+	}
 }

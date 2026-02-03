@@ -17,9 +17,24 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Override
     protected void onSetUp() {
-        EmployeeView view = GuiActionRunner.execute(EmployeeView::new);
+        EmployeeView view = GuiActionRunner.execute(() -> new EmployeeView());
+        show(view);
+    }
+
+    private void show(EmployeeView view) {
+        if (window != null) {
+            window.cleanUp();
+        }
         window = new FrameFixture(robot(), view);
         window.show();
+    }
+
+    @Override
+    protected void onTearDown() {
+        if (window != null) {
+            window.cleanUp();
+            window = null;
+        }
     }
 
     @Test
@@ -84,16 +99,19 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
             return v;
         });
 
-        window = new FrameFixture(robot(), view);
-        window.show();
+        FrameFixture localWindow = new FrameFixture(robot(), view);
+        localWindow.show();
 
-        window.textBox("txtEmployeeId").setText("001");
-        window.textBox("txtEmployeeName").setText("Pika's");
+        localWindow.textBox("txtEmployeeId").setText("001");
+        localWindow.textBox("txtEmployeeName").setText("Pika's");
 
-        window.button("btnAddEmployee").click();
+        localWindow.button("btnAddEmployee").click();
 
         verify(controller).addEmployee("001", "Pika's");
+
+        localWindow.cleanUp();
     }
+
 
     @Test
     public void shouldEnableDeleteButtonOnlyWhenEmployeeIdIsProvided() {
@@ -116,13 +134,16 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
             return v;
         });
 
-        window = new FrameFixture(robot(), view);
-        window.show();
+        FrameFixture localWindow = new FrameFixture(robot(), view);
+        localWindow.show();
 
-        window.textBox("txtEmployeeId").setText("007");
+        localWindow.textBox("txtEmployeeId").enterText("007");
 
-        window.button("btnRemoveEmployee").click();
+        localWindow.button("btnRemoveEmployee").click();
 
         verify(controller).removeEmployee("007");
+
+        localWindow.cleanUp();
     }
+
 }
