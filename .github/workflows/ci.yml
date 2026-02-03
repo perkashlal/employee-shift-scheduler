@@ -32,7 +32,7 @@ jobs:
 
       - run: xvfb-run -a mvn -B -ntp clean test
 
-      - run: xvfb-run -a mvn -B -ntp clean verify
+      - run: xvfb-run -a mvn -B -ntp  verify
 
       - if: always()
         uses: actions/upload-artifact@v4
@@ -59,7 +59,7 @@ jobs:
 
       - run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - run: xvfb-run -a mvn -B -ntp -Pjacoco clean verify
+      - run: xvfb-run -a mvn -B -ntp clean verify
 
       - if: always()
         uses: actions/upload-artifact@v4
