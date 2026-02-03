@@ -32,7 +32,7 @@ jobs:
 
       - run: xvfb-run -a mvn -B -ntp clean test
 
-      - run: xvfb-run -a mvn -B -ntp verify
+      - run: xvfb-run -a mvn -B -ntp clean verify
 
       - if: always()
         uses: actions/upload-artifact@v4
