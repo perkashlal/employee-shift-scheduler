@@ -1,0 +1,36 @@
+package it.university.advprog;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class EmployeeTest {
+
+    @Test
+    void shouldExposeIdAndName() {
+        Employee e = new Employee("1", "Alice");
+        assertEquals("1", e.id());
+        assertEquals("Alice", e.name());
+    }
+
+    @Test
+    void equalsAndHashCodeShouldWorkForSameValues() {
+        Employee a1 = new Employee("1", "Alice");
+        Employee a2 = new Employee("1", "Alice");
+        Employee b = new Employee("2", "Bob");
+
+        assertEquals(a1, a2);
+        assertEquals(a1.hashCode(), a2.hashCode());
+
+        assertNotEquals(a1, b);
+        assertNotEquals(a1, null);
+        assertNotEquals(a1, "not-an-employee");
+    }
+
+    @Test
+    void equalsShouldBeFalseWhenNameOrIdDiffers() {
+        Employee base = new Employee("1", "Alice");
+        assertNotEquals(base, new Employee("1", "Bob"));     // different name
+        assertNotEquals(base, new Employee("2", "Alice"));   // different id
+    }
+}
