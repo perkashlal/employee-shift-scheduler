@@ -105,6 +105,7 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         localWindow.textBox("txtEmployeeId").setText("001");
         localWindow.textBox("txtEmployeeName").setText("Pika's");
 
+        localWindow.button("btnAddEmployee").requireEnabled();
         localWindow.button("btnAddEmployee").click();
 
         verify(controller).addEmployee("001", "Pika's");
