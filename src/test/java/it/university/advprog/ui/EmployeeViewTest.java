@@ -1,60 +1,53 @@
 package it.university.advprog.ui;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import javax.swing.JFrame;
 
-import org.assertj.swing.core.BasicRobot;
-import org.assertj.swing.core.Robot;
 import org.assertj.swing.edt.FailOnThreadViolationRepaintManager;
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
+import org.assertj.swing.junit.runner.GUITestRunner;
+import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public class EmployeeViewTest {
+@RunWith(GUITestRunner.class)
+public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
-    private Robot robot;
     private FrameFixture window;
-
-    private EmployeeView view;
     private EmployeeController controller;
 
     @BeforeClass
-    public static void setUpOnce() {
+    public static void installRepaintManager() {
         FailOnThreadViolationRepaintManager.install();
     }
 
-    @Before
-    public void setUp() {
-        robot = BasicRobot.robotWithNewAwtHierarchy();
-
+    @Override
+    protected void onSetUp() {
         controller = mock(EmployeeController.class);
 
-        view = GuiActionRunner.execute(() -> {
+        EmployeeView view = GuiActionRunner.execute(() -> {
             EmployeeView v = new EmployeeView(controller);
             v.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             return v;
         });
 
-        window = new FrameFixture(robot, view);
+        window = new FrameFixture(robot(), view);
         window.show();
     }
 
+    // ✅ IMPORTANT: name MUST NOT be tearDown() and MUST NOT be cleanUp()
     @After
-    public void tearDown() {
+    public void afterEachTest() {
         if (window != null) {
-            window.cleanUp();
+            window.cleanUp(); // this is FrameFixture cleanup, not the test template method
             window = null;
         }
-        if (robot != null) {
-            robot.cleanUp();
-            robot = null;
-        }
-        view = null;
         controller = null;
     }
 
@@ -66,24 +59,24 @@ public class EmployeeViewTest {
 
     @Test
     public void shouldEnableAddButtonWhenIdAndNameAreProvided() {
-        window.textBox("idTextBox").enterText("1");
-        window.textBox("nameTextBox").enterText("Alice");
+        window.textBox("idTextBox").setText("1");
+        window.textBox("nameTextBox").setText("Alice");
         window.button("btnAddEmployee").requireEnabled();
     }
 
     @Test
     public void shouldKeepAddButtonDisabledIfEitherFieldIsBlank() {
-        window.textBox("idTextBox").enterText("1");
+        window.textBox("idTextBox").setText("1");
         window.button("btnAddEmployee").requireDisabled();
 
         window.textBox("idTextBox").setText("");
-        window.textBox("nameTextBox").enterText("Alice");
+        window.textBox("nameTextBox").setText("Alice");
         window.button("btnAddEmployee").requireDisabled();
     }
 
     @Test
     public void shouldEnableDeleteButtonOnlyWhenEmployeeIdIsProvided() {
-        window.textBox("idTextBox").enterText("1");
+        window.textBox("idTextBox").setText("1");
         window.button("btnRemoveEmployee").requireEnabled();
 
         window.textBox("idTextBox").setText("");
@@ -92,9 +85,10 @@ public class EmployeeViewTest {
 
     @Test
     public void shouldClearFieldsAndDisableAddButtonAfterAddClick() {
-        window.textBox("idTextBox").enterText("1");
-        window.textBox("nameTextBox").enterText("Alice");
+        window.textBox("idTextBox").setText("1");
+        window.textBox("nameTextBox").setText("Alice");
 
+        window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
         window.textBox("idTextBox").requireText("");
@@ -104,20 +98,22 @@ public class EmployeeViewTest {
 
     @Test
     public void shouldDelegateAddEmployeeToController() {
-        window.textBox("idTextBox").enterText("1");
-        window.textBox("nameTextBox").enterText("Alice");
+        window.textBox("idTextBox").setText("1");
+        window.textBox("nameTextBox").setText("Alice");
 
+        window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
-        verify(controller).addEmployee("1", "Alice");
+        verify(controller, timeout(1000)).addEmployee("1", "Alice");
     }
 
     @Test
     public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
-        window.textBox("idTextBox").enterText("1");
+        window.textBox("idTextBox").setText("1");
 
+        window.button("btnRemoveEmployee").requireEnabled();
         window.button("btnRemoveEmployee").click();
 
-        verify(controller).removeEmployee("1");
+        verify(controller, timeout(1000)).removeEmployee("1");
     }
 }
