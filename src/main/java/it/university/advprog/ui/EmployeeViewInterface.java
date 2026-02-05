@@ -6,7 +6,7 @@ public interface EmployeeViewInterface {
 
     void setEmployeeController(EmployeeController controller);
 
-    void employeeAdded(Employee employee);
+    void employeeAdded(Employee e);
 
     void employeeRemoved(String id);
 

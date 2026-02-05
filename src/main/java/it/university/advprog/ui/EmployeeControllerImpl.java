@@ -1,7 +1,7 @@
 package it.university.advprog.ui;
-
 import it.university.advprog.Employee;
 import it.university.advprog.repository.EmployeeRepository;
+import java.util.List;
 
 public class EmployeeControllerImpl implements EmployeeController {
 
@@ -12,20 +12,45 @@ public class EmployeeControllerImpl implements EmployeeController {
         this.repository = repository;
     }
 
+    @Override
     public void setEmployeeView(EmployeeViewInterface view) {
         this.view = view;
     }
 
     @Override
+    public void allEmployees() {
+        try {
+            List<Employee> employees = repository.findAll();
+            for (Employee e : employees) {
+                view.employeeAdded(e);
+            }
+            view.showError(""); // clear any old error
+        } catch (Exception ex) {
+            view.showError("Cannot load employees: " + ex.getMessage());
+        }
+    }
+
+    @Override
     public void addEmployee(String id, String name) {
-        Employee employee = new Employee(id, name);
-        repository.save(employee);
-        view.employeeAdded(employee);
+        try {
+            Employee employee = new Employee(id, name);
+            repository.save(employee);
+            view.employeeAdded(employee);
+            view.showError("");
+        } catch (Exception ex) {
+            view.showError("Cannot add employee: " + ex.getMessage());
+        }
     }
 
     @Override
     public void removeEmployee(String id) {
-        repository.delete(id);
-        view.employeeRemoved(id);
+        try {
+            repository.delete(id);
+            view.employeeRemoved(id);
+            view.showError("");
+        } catch (Exception ex) {
+            view.showError("Cannot remove employee: " + ex.getMessage());
+        }
+        
     }
 }

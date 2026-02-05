@@ -19,7 +19,6 @@
         <mockito.version>5.8.0</mockito.version>
         <mongodb.driver.version>4.11.1</mongodb.driver.version>
         <testcontainers.version>1.19.7</testcontainers.version>
-
         <slf4j.simple.version>2.0.12</slf4j.simple.version>
 
         <surefire.version>3.2.5</surefire.version>
@@ -35,6 +34,7 @@
     </properties>
 
     <dependencies>
+        <!-- JUnit 5 (unit tests) -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -42,10 +42,19 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Vintage so JUnit4 tests can run under the JUnit Platform -->
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Explicit JUnit 4 dependency (important for AssertJ-Swing + GUITestRunner) -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
 
@@ -70,12 +79,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Mongo driver (app runtime) -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
             <version>${mongodb.driver.version}</version>
         </dependency>
 
+        <!-- Testcontainers -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -90,6 +101,7 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- In-memory Mongo server used by some IT tests -->
         <dependency>
             <groupId>de.bwaldvogel</groupId>
             <artifactId>mongo-java-server</artifactId>
@@ -97,6 +109,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- CLI args parsing -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.6.1</version>
+        </dependency>
+
+        <!-- Logging for tests -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -108,6 +128,7 @@
     <build>
         <plugins>
 
+            <!-- JaCoCo -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -132,32 +153,14 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
-                <configuration>
-                    <useModulePath>false</useModulePath>
-                    <excludes>
-                        <exclude>**/*IT.java</exclude>
-                    </excludes>
-                    <argLine>
-                        ${jacocoArgLine}
-                        --add-opens java.base/java.util=ALL-UNNAMED
-                        --add-opens java.base/java.lang=ALL-UNNAMED
-                        --add-opens java.desktop/java.awt=ALL-UNNAMED
-                        --add-opens java.desktop/javax.swing=ALL-UNNAMED
-                    </argLine>
-                </configuration>
-            </plugin>
-
+            <!-- Add src/it/java and src/e2e/java as test sources -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
                 <version>${buildhelper.version}</version>
                 <executions>
                     <execution>
-                        <id>add-it-sources</id>
+                        <id>add-test-sources</id>
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>add-test-source</goal>
@@ -165,21 +168,27 @@
                         <configuration>
                             <sources>
                                 <source>src/it/java</source>
+                                <source>src/e2e/java</source>
                             </sources>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
+            <!-- Unit tests only -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe.version}</version>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
                 <configuration>
-                    <includes>
-                        <include>**/*IT.java</include>
-                    </includes>
                     <useModulePath>false</useModulePath>
+
+                    <!-- Keep unit tests here; exclude IT + E2E -->
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                        <exclude>**/*E2E.java</exclude>
+                    </excludes>
+
                     <argLine>
                         ${jacocoArgLine}
                         --add-opens java.base/java.util=ALL-UNNAMED
@@ -188,17 +197,76 @@
                         --add-opens java.desktop/javax.swing=ALL-UNNAMED
                     </argLine>
                 </configuration>
+            </plugin>
+
+            <!-- Integration + E2E tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe.version}</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+
+                    <!-- Fresh forks are often more stable for Swing E2E -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>false</reuseForks>
+
+                    <argLine>
+                        ${jacocoArgLine}
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.desktop/java.awt=ALL-UNNAMED
+                        --add-opens java.desktop/javax.swing=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+
                 <executions>
+                    <!-- Run IT tests in integration-test phase -->
                     <execution>
-                        <id>integration-tests</id>
+                        <id>run-it</id>
+                        <phase>integration-test</phase>
                         <goals>
                             <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*E2E.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+
+                    <!-- Run E2E tests in integration-test phase -->
+                    <execution>
+                        <id>run-e2e</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>
+                                <include>**/*E2E.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*IT.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+
+                    <!-- Verify ONCE at the end -->
+                    <execution>
+                        <id>verify-all</id>
+                        <phase>verify</phase>
+                        <goals>
                             <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
 
+            <!-- PIT -->
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
@@ -220,7 +288,6 @@
                         <param>it.university.advprog.*</param>
                     </targetTests>
 
-                    <!-- Fix: Swing UI tests are flaky under PIT minion/JUnit Vintage -->
                     <excludedTestClasses>
                         <param>it.university.advprog.ui.*</param>
                     </excludedTestClasses>

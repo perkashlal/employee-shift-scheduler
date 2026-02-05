@@ -35,22 +35,15 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
         mongoServer = new MongoServer(new MemoryBackend());
         InetSocketAddress address = mongoServer.bind();
 
-        mongoClient = MongoClients.create(
-                "mongodb://" + address.getHostName() + ":" + address.getPort()
-        );
+        mongoClient = MongoClients.create("mongodb://localhost:" + address.getPort());
 
         mongoClient.getDatabase(DB_NAME).drop();
 
-        repository = new EmployeeMongoRepository(
-                mongoClient,
-                DB_NAME,
-                COLLECTION
-        );
+        repository = new EmployeeMongoRepository(mongoClient, DB_NAME, COLLECTION);
 
         EmployeeView view = GuiActionRunner.execute(() -> {
             EmployeeView v = new EmployeeView();
-            EmployeeController controller =
-                    new EmployeeControllerImpl(repository);
+            EmployeeController controller = new EmployeeControllerImpl(repository);
             controller.setEmployeeView(v);
             v.setEmployeeController(controller);
             return v;
@@ -62,15 +55,24 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
 
     @Override
     protected void onTearDown() {
-        window.cleanUp();
-        mongoClient.close();
-        mongoServer.shutdown();
+        if (window != null) {
+            window.cleanUp();
+            window = null;
+        }
+        if (mongoClient != null) {
+            mongoClient.close();
+            mongoClient = null;
+        }
+        if (mongoServer != null) {
+            mongoServer.shutdown();
+            mongoServer = null;
+        }
     }
 
     @Test
     public void shouldAddEmployeeThroughUI() {
-        window.textBox("txtEmployeeId").setText("1");
-        window.textBox("txtEmployeeName").setText("Alice");
+        window.textBox("idTextBox").setText("1");
+        window.textBox("nameTextBox").setText("Alice");
         window.button("btnAddEmployee").click();
 
         assertThat(repository.findById("1"))
@@ -82,7 +84,7 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
     public void shouldRemoveEmployeeThroughUI() {
         repository.save(new Employee("2", "Bob"));
 
-        window.textBox("txtEmployeeId").setText("2");
+        window.textBox("idTextBox").setText("2");
         window.button("btnRemoveEmployee").click();
 
         assertThat(repository.findById("2")).isEmpty();

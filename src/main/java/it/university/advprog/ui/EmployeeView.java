@@ -1,145 +1,173 @@
 package it.university.advprog.ui;
 
 import it.university.advprog.Employee;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
 public class EmployeeView extends JFrame implements EmployeeViewInterface {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private JLabel lblEmployeeId;
-	private JLabel lblEmployeeName;
-	private JTextField txtEmployeeId;
-	private JTextField txtEmployeeName;
-	private JButton btnAddEmployee;
-	private JButton btnRemoveEmployee;
+    private JPanel formPanel;
 
-	private EmployeeController employeeController;
+    private JList<String> employeeList;
+    private DefaultListModel<String> employeeListModel;
 
-	public EmployeeView() {
-		this(null);
-	}
+    private JLabel lblEmployeeId;
+    private JLabel lblEmployeeName;
+    private JTextField txtEmployeeId;
+    private JTextField txtEmployeeName;
+    private JButton btnAddEmployee;
+    private JButton btnRemoveEmployee;
 
-	public EmployeeView(EmployeeController controller) {
-		this.employeeController = controller;
+    private JLabel errorMessageLabel;
 
-		setName("employeeView");
-		setTitle("Employee View");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    private EmployeeController employeeController;
 
-		initUI();
-		initListeners();
-		updateButtonStates();
+    public EmployeeView() {
+        this(null);
+    }
 
-		pack();
-		setLocationRelativeTo(null);
-	}
+    public EmployeeView(EmployeeController controller) {
+        this.employeeController = controller;
 
-	private void initUI() {
-		JPanel panel = new JPanel(new GridLayout(3, 2));
+        setName("employeeView");
+        setTitle("Employee View");
 
-		lblEmployeeId = new JLabel("Employee ID");
-		lblEmployeeId.setName("lblEmployeeId");
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-		lblEmployeeName = new JLabel("Employee Name");
-		lblEmployeeName.setName("lblEmployeeName");
+        initUI();
+        initListeners();
+        updateButtonStates();
 
-		txtEmployeeId = new JTextField();
-		txtEmployeeId.setName("txtEmployeeId");
+        pack();
+        setLocationRelativeTo(null);
+    }
 
-		txtEmployeeName = new JTextField();
-		txtEmployeeName.setName("txtEmployeeName");
+    private void initUI() {
+        JPanel root = new JPanel(new BorderLayout(10, 10));
+        setContentPane(root);
 
-		btnAddEmployee = new JButton("Add Employee");
-		btnAddEmployee.setName("btnAddEmployee");
+        formPanel = new JPanel(new GridLayout(3, 2));
 
-		btnRemoveEmployee = new JButton("Remove Employee");
-		btnRemoveEmployee.setName("btnRemoveEmployee");
+        lblEmployeeId = new JLabel("Employee ID");
+        lblEmployeeId.setName("lblEmployeeId");
 
-		panel.add(lblEmployeeId);
-		panel.add(txtEmployeeId);
-		panel.add(lblEmployeeName);
-		panel.add(txtEmployeeName);
-		panel.add(btnAddEmployee);
-		panel.add(btnRemoveEmployee);
+        lblEmployeeName = new JLabel("Employee Name");
+        lblEmployeeName.setName("lblEmployeeName");
 
-		setContentPane(panel);
-	}
+        txtEmployeeId = new JTextField();
+        txtEmployeeId.setName("idTextBox");
 
-	private void initListeners() {
-		DocumentListener fieldListener = new DocumentListener() {
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateButtonStates();
-			}
+        txtEmployeeName = new JTextField();
+        txtEmployeeName.setName("nameTextBox");
 
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateButtonStates();
-			}
+        btnAddEmployee = new JButton("Add Employee");
+        btnAddEmployee.setName("btnAddEmployee");
 
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateButtonStates();
-			}
-		};
+        btnRemoveEmployee = new JButton("Remove Employee");
+        btnRemoveEmployee.setName("btnRemoveEmployee");
 
-		txtEmployeeId.getDocument().addDocumentListener(fieldListener);
-		txtEmployeeName.getDocument().addDocumentListener(fieldListener);
+        formPanel.add(lblEmployeeId);
+        formPanel.add(txtEmployeeId);
+        formPanel.add(lblEmployeeName);
+        formPanel.add(txtEmployeeName);
+        formPanel.add(btnAddEmployee);
+        formPanel.add(btnRemoveEmployee);
 
-		btnAddEmployee.addActionListener(e -> handleAddEmployee());
-		btnRemoveEmployee.addActionListener(e -> handleRemoveEmployee());
-	}
+        root.add(formPanel, BorderLayout.NORTH);
 
-	private void updateButtonStates() {
-		boolean hasId = !txtEmployeeId.getText().trim().isEmpty();
-		boolean hasName = !txtEmployeeName.getText().trim().isEmpty();
+        employeeListModel = new DefaultListModel<>();
+        employeeList = new JList<>(employeeListModel);
+        employeeList.setName("employeeList");
+        root.add(new JScrollPane(employeeList), BorderLayout.CENTER);
 
-		btnAddEmployee.setEnabled(hasId && hasName);
-		btnRemoveEmployee.setEnabled(hasId);
-	}
+        errorMessageLabel = new JLabel("");
+        errorMessageLabel.setName("errorMessageLabel");
+        root.add(errorMessageLabel, BorderLayout.SOUTH);
+    }
 
-	private void handleAddEmployee() {
-		String id = txtEmployeeId.getText().trim();
-		String name = txtEmployeeName.getText().trim();
+    private void initListeners() {
+        DocumentListener fieldListener = new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { updateButtonStates(); }
+            @Override public void removeUpdate(DocumentEvent e) { updateButtonStates(); }
+            @Override public void changedUpdate(DocumentEvent e) { updateButtonStates(); }
+        };
 
-		if (employeeController != null) {
-			employeeController.addEmployee(id, name);
-		}
+        txtEmployeeId.getDocument().addDocumentListener(fieldListener);
+        txtEmployeeName.getDocument().addDocumentListener(fieldListener);
 
-		txtEmployeeId.setText("");
-		txtEmployeeName.setText("");
-		updateButtonStates();
-	}
+        btnAddEmployee.addActionListener(e -> handleAddEmployee());
+        btnRemoveEmployee.addActionListener(e -> handleRemoveEmployee());
+    }
 
-	private void handleRemoveEmployee() {
-		String id = txtEmployeeId.getText().trim();
+    private void updateButtonStates() {
+        boolean hasId = !txtEmployeeId.getText().trim().isEmpty();
+        boolean hasName = !txtEmployeeName.getText().trim().isEmpty();
 
-		if (employeeController != null) {
-			employeeController.removeEmployee(id);
-		}
+        btnAddEmployee.setEnabled(hasId && hasName);
+        btnRemoveEmployee.setEnabled(hasId);
+    }
 
-		updateButtonStates();
-	}
+    private void handleAddEmployee() {
+        String id = txtEmployeeId.getText().trim();
+        String name = txtEmployeeName.getText().trim();
 
-	@Override
-	public void setEmployeeController(EmployeeController controller) {
-		this.employeeController = controller;
-	}
+        if (employeeController != null) {
+            employeeController.addEmployee(id, name);
+        }
 
-	@Override
-	public void employeeAdded(Employee employee) {
-	}
+        txtEmployeeId.setText("");
+        txtEmployeeName.setText("");
+        updateButtonStates();
+    }
 
-	@Override
-	public void employeeRemoved(String id) {
-	}
+    private void handleRemoveEmployee() {
+        String id = txtEmployeeId.getText().trim();
 
-	@Override
-	public void showError(String message) {
-	}
+        if (employeeController != null) {
+            employeeController.removeEmployee(id);
+        }
+
+        updateButtonStates();
+    }
+
+    @Override
+    public void setEmployeeController(EmployeeController controller) {
+        this.employeeController = controller;
+    }
+
+    @Override
+    public void employeeAdded(Employee employee) {
+        SwingUtilities.invokeLater(() -> {
+            employeeListModel.addElement(display(employee));
+            errorMessageLabel.setText("");
+        });
+    }
+
+    @Override
+    public void employeeRemoved(String id) {
+        SwingUtilities.invokeLater(() -> {
+            for (int i = 0; i < employeeListModel.size(); i++) {
+                String row = employeeListModel.get(i);
+                if (row.startsWith(id + " - ")) {
+                    employeeListModel.remove(i);
+                    break;
+                }
+            }
+            errorMessageLabel.setText("");
+        });
+    }
+
+    @Override
+    public void showError(String message) {
+        SwingUtilities.invokeLater(() -> errorMessageLabel.setText(message));
+    }
+
+    private String display(Employee employee) {
+        return employee.id() + " - " + employee.name();
+    }
 }
