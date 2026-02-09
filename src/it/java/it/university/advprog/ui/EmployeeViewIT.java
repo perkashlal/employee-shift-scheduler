@@ -38,7 +38,6 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
         mongoClient = MongoClients.create("mongodb://localhost:" + address.getPort());
 
         mongoClient.getDatabase(DB_NAME).drop();
-
         repository = new EmployeeMongoRepository(mongoClient, DB_NAME, COLLECTION);
 
         EmployeeView view = GuiActionRunner.execute(() -> {
@@ -73,6 +72,9 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
     public void shouldAddEmployeeThroughUI() {
         window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
+
+        // ✅ wait until DocumentListener enables the button
+        window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
         assertThat(repository.findById("1"))
@@ -85,6 +87,8 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
         repository.save(new Employee("2", "Bob"));
 
         window.textBox("idTextBox").setText("2");
+
+        window.button("btnRemoveEmployee").requireEnabled();
         window.button("btnRemoveEmployee").click();
 
         assertThat(repository.findById("2")).isEmpty();
