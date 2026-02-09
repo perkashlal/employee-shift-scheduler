@@ -41,7 +41,6 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.show();
     }
 
-    // ✅ IMPORTANT: name MUST NOT be tearDown() and MUST NOT be cleanUp()
     @After
     public void afterEachTest() {
         if (window != null) {
