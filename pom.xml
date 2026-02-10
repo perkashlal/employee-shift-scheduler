@@ -3,319 +3,348 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <groupId>it.university.advprog</groupId>
-    <artifactId>employee-shift-scheduler</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+  <groupId>it.university.advprog</groupId>
+  <artifactId>employee-shift-scheduler</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
 
-    <properties>
-        <maven.compiler.release>17</maven.compiler.release>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <junit.jupiter.version>5.10.1</junit.jupiter.version>
-        <assertj.version>3.24.2</assertj.version>
-        <mockito.version>5.8.0</mockito.version>
-        <mongodb.driver.version>4.11.1</mongodb.driver.version>
-        <testcontainers.version>1.19.7</testcontainers.version>
-        <slf4j.simple.version>2.0.12</slf4j.simple.version>
+    <junit.jupiter.version>5.10.1</junit.jupiter.version>
+    <assertj.version>3.24.2</assertj.version>
+    <mockito.version>5.8.0</mockito.version>
+    <mongodb.driver.version>4.11.1</mongodb.driver.version>
+    <testcontainers.version>1.19.7</testcontainers.version>
+    <slf4j.simple.version>2.0.12</slf4j.simple.version>
 
-        <surefire.version>3.2.5</surefire.version>
-        <failsafe.version>3.2.5</failsafe.version>
-        <jacoco.version>0.8.11</jacoco.version>
-        <buildhelper.version>3.4.0</buildhelper.version>
+    <surefire.version>3.2.5</surefire.version>
+    <failsafe.version>3.2.5</failsafe.version>
+    <jacoco.version>0.8.11</jacoco.version>
+    <buildhelper.version>3.4.0</buildhelper.version>
 
-        <pitest.version>1.15.6</pitest.version>
-        <pitest.junit5.plugin.version>1.2.1</pitest.junit5.plugin.version>
+    <pitest.version>1.15.6</pitest.version>
+    <pitest.junit5.plugin.version>1.2.1</pitest.junit5.plugin.version>
 
-        <!-- Prevent unresolved ${jacocoArgLine} when running goals directly -->
-        <jacocoArgLine></jacocoArgLine>
-    </properties>
+    <cucumber.version>5.5.0</cucumber.version>
 
-    <dependencies>
-        <!-- JUnit 5 (unit tests) -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <jacocoArgLine></jacocoArgLine>
+  </properties>
 
-        <!-- Vintage so JUnit4 tests can run under the JUnit Platform -->
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- Explicit JUnit 4 dependency (important for AssertJ-Swing + GUITestRunner) -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-swing-junit</artifactId>
-            <version>3.17.1</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-swing-junit</artifactId>
+      <version>3.17.1</version>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- Mongo driver (app runtime) -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>${mongodb.driver.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- Testcontainers -->
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongodb-driver-sync</artifactId>
+      <version>${mongodb.driver.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>mongodb</artifactId>
-            <version>${testcontainers.version}</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- In-memory Mongo server used by some IT tests -->
-        <dependency>
-            <groupId>de.bwaldvogel</groupId>
-            <artifactId>mongo-java-server</artifactId>
-            <version>1.45.0</version>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mongodb</artifactId>
+      <version>${testcontainers.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- CLI args parsing -->
-        <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli</artifactId>
-            <version>4.6.1</version>
-        </dependency>
+    <dependency>
+      <groupId>de.bwaldvogel</groupId>
+      <artifactId>mongo-java-server</artifactId>
+      <version>1.45.0</version>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- Logging for tests -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.simple.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>4.6.1</version>
+    </dependency>
 
-    <build>
-        <plugins>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.simple.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-            <!-- JaCoCo -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                        <configuration>
-                            <propertyName>jacocoArgLine</propertyName>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-            <!-- Add src/it/java and src/e2e/java as test sources -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>${buildhelper.version}</version>
-                <executions>
-                    <execution>
-                        <id>add-test-sources</id>
-                        <phase>generate-test-sources</phase>
-                        <goals>
-                            <goal>add-test-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>src/it/java</source>
-                                <source>src/e2e/java</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
-            <!-- Unit tests only -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
-                <configuration>
-                    <useModulePath>false</useModulePath>
+  <build>
+    <plugins>
 
-                    <!-- Keep unit tests here; exclude IT + E2E -->
-                    <excludes>
-                        <exclude>**/*IT.java</exclude>
-                        <exclude>**/*E2E.java</exclude>
-                    </excludes>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <propertyName>jacocoArgLine</propertyName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-                    <argLine>
-                        ${jacocoArgLine}
-                        --add-opens java.base/java.util=ALL-UNNAMED
-                        --add-opens java.base/java.lang=ALL-UNNAMED
-                        --add-opens java.desktop/java.awt=ALL-UNNAMED
-                        --add-opens java.desktop/javax.swing=ALL-UNNAMED
-                    </argLine>
-                </configuration>
-            </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${buildhelper.version}</version>
+        <executions>
+          <execution>
+            <id>add-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/it/java</source>
+                <source>src/e2e/java</source>
+                <source>src/bdd/java</source>
+              </sources>
+            </configuration>
+          </execution>
 
-            <!-- Integration + E2E tests -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe.version}</version>
-                <configuration>
-                    <useModulePath>false</useModulePath>
+          <execution>
+            <id>add-test-resources</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>add-test-resource</goal>
+            </goals>
+            <configuration>
+              <resources>
+                <resource>
+                  <directory>src/bdd/resources</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-                    <!-- Fresh forks are often more stable for Swing E2E -->
-                    <forkCount>1</forkCount>
-                    <reuseForks>false</reuseForks>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+          <excludes>
+            <exclude>**/*IT.java</exclude>
+            <exclude>**/*E2E.java</exclude>
+            <exclude>**/*BDD.java</exclude>
+          </excludes>
+          <argLine>
+            ${jacocoArgLine}
+            --add-opens java.base/java.util=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.desktop/java.awt=ALL-UNNAMED
+            --add-opens java.desktop/javax.swing=ALL-UNNAMED
+          </argLine>
+        </configuration>
+      </plugin>
 
-                    <argLine>
-                        ${jacocoArgLine}
-                        --add-opens java.base/java.util=ALL-UNNAMED
-                        --add-opens java.base/java.lang=ALL-UNNAMED
-                        --add-opens java.desktop/java.awt=ALL-UNNAMED
-                        --add-opens java.desktop/javax.swing=ALL-UNNAMED
-                    </argLine>
-                </configuration>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${failsafe.version}</version>
+        <configuration>
+          <useModulePath>false</useModulePath>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
+          <argLine>
+            ${jacocoArgLine}
+            --add-opens java.base/java.util=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-opens java.desktop/java.awt=ALL-UNNAMED
+            --add-opens java.desktop/javax.swing=ALL-UNNAMED
+          </argLine>
+        </configuration>
 
-                <executions>
-                    <!-- Run IT tests in integration-test phase -->
-                    <execution>
-                        <id>run-it</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>**/*IT.java</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*E2E.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
+        <executions>
+          <execution>
+            <id>run-it</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*IT.java</include>
+              </includes>
+              <excludes>
+                <exclude>**/*E2E.java</exclude>
+                <exclude>**/*BDD.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
 
-                    <!-- Run E2E tests in integration-test phase -->
-                    <execution>
-                        <id>run-e2e</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>integration-test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>
-                                <include>**/*E2E.java</include>
-                            </includes>
-                            <excludes>
-                                <exclude>**/*IT.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
+          <execution>
+            <id>run-e2e</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*E2E.java</include>
+              </includes>
+              <excludes>
+                <exclude>**/*IT.java</exclude>
+                <exclude>**/*BDD.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
 
-                    <!-- Verify ONCE at the end -->
-                    <execution>
-                        <id>verify-all</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+          <execution>
+            <id>run-bdd</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>**/*BDD.java</include>
+              </includes>
+              <excludes>
+                <exclude>**/*IT.java</exclude>
+                <exclude>**/*E2E.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
 
-            <!-- PIT -->
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>${pitest.version}</version>
+          <execution>
+            <id>verify-all</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-                <configuration>
-                    <jvmArgs>
-                        <param>--add-opens=java.base/java.util=ALL-UNNAMED</param>
-                        <param>--add-opens=java.base/java.lang=ALL-UNNAMED</param>
-                        <param>--add-opens=java.desktop/java.awt=ALL-UNNAMED</param>
-                        <param>--add-opens=java.desktop/javax.swing=ALL-UNNAMED</param>
-                    </jvmArgs>
+      <plugin>
+        <groupId>org.pitest</groupId>
+        <artifactId>pitest-maven</artifactId>
+        <version>${pitest.version}</version>
 
-                    <targetClasses>
-                        <param>it.university.advprog.*</param>
-                    </targetClasses>
+        <configuration>
+          <jvmArgs>
+            <param>--add-opens=java.base/java.util=ALL-UNNAMED</param>
+            <param>--add-opens=java.base/java.lang=ALL-UNNAMED</param>
+            <param>--add-opens=java.desktop/java.awt=ALL-UNNAMED</param>
+            <param>--add-opens=java.desktop/javax.swing=ALL-UNNAMED</param>
+          </jvmArgs>
 
-                    <targetTests>
-                        <param>it.university.advprog.*</param>
-                    </targetTests>
+          <targetClasses>
+            <param>it.university.advprog.*</param>
+          </targetClasses>
 
-                    <excludedTestClasses>
-                        <param>it.university.advprog.ui.*</param>
-                    </excludedTestClasses>
+          <targetTests>
+            <param>it.university.advprog.*</param>
+          </targetTests>
 
-                    <excludedClasses>
-                        <param>it.university.advprog.ui.*</param>
-                        <param>it.university.advprog.app.*</param>
-                        <param>it.university.advprog.repository.mongo.*</param>
-                    </excludedClasses>
+          <excludedTestClasses>
+            <param>it.university.advprog.ui.*</param>
+          </excludedTestClasses>
 
-                    <outputFormats>
-                        <param>HTML</param>
-                        <param>XML</param>
-                    </outputFormats>
+          <excludedClasses>
+            <param>it.university.advprog.ui.*</param>
+            <param>it.university.advprog.app.*</param>
+            <param>it.university.advprog.repository.mongo.*</param>
+          </excludedClasses>
 
-                    <threads>4</threads>
-                </configuration>
+          <outputFormats>
+            <param>HTML</param>
+            <param>XML</param>
+          </outputFormats>
 
-                <dependencies>
-                    <dependency>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>${pitest.junit5.plugin.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+          <threads>4</threads>
+        </configuration>
 
-        </plugins>
-    </build>
+        <dependencies>
+          <dependency>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-junit5-plugin</artifactId>
+            <version>${pitest.junit5.plugin.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+    </plugins>
+  </build>
 
 </project>
