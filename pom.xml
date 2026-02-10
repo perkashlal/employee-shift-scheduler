@@ -29,12 +29,12 @@
     <pitest.version>1.15.6</pitest.version>
     <pitest.junit5.plugin.version>1.2.1</pitest.junit5.plugin.version>
 
-    <cucumber.version>5.5.0</cucumber.version>
-
     <jacocoArgLine></jacocoArgLine>
   </properties>
 
   <dependencies>
+
+    <!-- JUnit -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -56,6 +56,7 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Assertions & mocks -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
@@ -77,12 +78,14 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Mongo -->
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-sync</artifactId>
       <version>${mongodb.driver.version}</version>
     </dependency>
 
+    <!-- Testcontainers -->
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -97,6 +100,7 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- Embedded Mongo for IT -->
     <dependency>
       <groupId>de.bwaldvogel</groupId>
       <artifactId>mongo-java-server</artifactId>
@@ -104,12 +108,14 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- CLI -->
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
       <version>4.6.1</version>
     </dependency>
 
+    <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
@@ -117,24 +123,12 @@
       <scope>test</scope>
     </dependency>
 
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-java</artifactId>
-      <version>${cucumber.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-junit</artifactId>
-      <version>${cucumber.version}</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
 
+      <!-- JaCoCo -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
@@ -159,6 +153,7 @@
         </executions>
       </plugin>
 
+      <!-- IT & E2E sources -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
@@ -174,28 +169,13 @@
               <sources>
                 <source>src/it/java</source>
                 <source>src/e2e/java</source>
-                <source>src/bdd/java</source>
               </sources>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>add-test-resources</id>
-            <phase>generate-test-resources</phase>
-            <goals>
-              <goal>add-test-resource</goal>
-            </goals>
-            <configuration>
-              <resources>
-                <resource>
-                  <directory>src/bdd/resources</directory>
-                </resource>
-              </resources>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
+      <!-- Unit tests -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -205,7 +185,6 @@
           <excludes>
             <exclude>**/*IT.java</exclude>
             <exclude>**/*E2E.java</exclude>
-            <exclude>**/*BDD.java</exclude>
           </excludes>
           <argLine>
             ${jacocoArgLine}
@@ -217,6 +196,7 @@
         </configuration>
       </plugin>
 
+      <!-- Integration + E2E -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -247,7 +227,6 @@
               </includes>
               <excludes>
                 <exclude>**/*E2E.java</exclude>
-                <exclude>**/*BDD.java</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -264,24 +243,6 @@
               </includes>
               <excludes>
                 <exclude>**/*IT.java</exclude>
-                <exclude>**/*BDD.java</exclude>
-              </excludes>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>run-bdd</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>**/*BDD.java</include>
-              </includes>
-              <excludes>
-                <exclude>**/*IT.java</exclude>
-                <exclude>**/*E2E.java</exclude>
               </excludes>
             </configuration>
           </execution>
@@ -296,11 +257,11 @@
         </executions>
       </plugin>
 
+      <!-- PIT -->
       <plugin>
         <groupId>org.pitest</groupId>
         <artifactId>pitest-maven</artifactId>
         <version>${pitest.version}</version>
-
         <configuration>
           <jvmArgs>
             <param>--add-opens=java.base/java.util=ALL-UNNAMED</param>
@@ -308,33 +269,26 @@
             <param>--add-opens=java.desktop/java.awt=ALL-UNNAMED</param>
             <param>--add-opens=java.desktop/javax.swing=ALL-UNNAMED</param>
           </jvmArgs>
-
           <targetClasses>
             <param>it.university.advprog.*</param>
           </targetClasses>
-
           <targetTests>
             <param>it.university.advprog.*</param>
           </targetTests>
-
           <excludedTestClasses>
             <param>it.university.advprog.ui.*</param>
           </excludedTestClasses>
-
           <excludedClasses>
             <param>it.university.advprog.ui.*</param>
             <param>it.university.advprog.app.*</param>
             <param>it.university.advprog.repository.mongo.*</param>
           </excludedClasses>
-
           <outputFormats>
             <param>HTML</param>
             <param>XML</param>
           </outputFormats>
-
           <threads>4</threads>
         </configuration>
-
         <dependencies>
           <dependency>
             <groupId>org.pitest</groupId>
