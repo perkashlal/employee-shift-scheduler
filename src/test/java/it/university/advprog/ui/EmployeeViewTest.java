@@ -46,7 +46,7 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
     @After
     public void afterEachTest() {
         if (window != null) {
-            window.cleanUp(); // this is FrameFixture cleanup, not the test template method
+            window.cleanUp(); // FrameFixture cleanup
             window = null;
         }
         controller = null;
@@ -92,6 +92,9 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
+        // ✅ Ensure the Swing EDT has processed the click and UI updates (important on CI/Xvfb)
+        robot().waitForIdle();
+
         window.textBox("idTextBox").requireText("");
         window.textBox("nameTextBox").requireText("");
         window.button("btnAddEmployee").requireDisabled();
@@ -105,6 +108,9 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
+        // ✅ Avoid CI flakiness: wait for EDT before verifying
+        robot().waitForIdle();
+
         verify(controller, timeout(1000)).addEmployee("1", "Alice");
     }
 
@@ -114,6 +120,8 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
         window.button("btnRemoveEmployee").requireEnabled();
         window.button("btnRemoveEmployee").click();
+
+        robot().waitForIdle();
 
         verify(controller, timeout(1000)).removeEmployee("1");
     }
