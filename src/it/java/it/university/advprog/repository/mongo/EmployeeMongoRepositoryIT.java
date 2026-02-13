@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
-import it.university.advprog.Employee;
+import it.university.advprog.model.Employee;
 import it.university.advprog.repository.EmployeeRepository;
 
 import org.junit.jupiter.api.AfterAll;

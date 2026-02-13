@@ -16,6 +16,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import it.university.advprog.controller.EmployeeController;
+
 @RunWith(GUITestRunner.class)
 public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 

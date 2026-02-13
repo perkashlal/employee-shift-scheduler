@@ -1,6 +1,8 @@
-package it.university.advprog.ui;
-import it.university.advprog.Employee;
+package it.university.advprog.controller;
+import it.university.advprog.model.Employee;
 import it.university.advprog.repository.EmployeeRepository;
+import it.university.advprog.ui.EmployeeViewInterface;
+
 import java.util.List;
 
 public class EmployeeControllerImpl implements EmployeeController {

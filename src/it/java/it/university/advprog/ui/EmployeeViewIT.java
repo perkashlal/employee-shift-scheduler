@@ -14,8 +14,9 @@ import com.mongodb.client.MongoClients;
 
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
-
-import it.university.advprog.Employee;
+import it.university.advprog.controller.EmployeeController;
+import it.university.advprog.controller.EmployeeControllerImpl;
+import it.university.advprog.model.Employee;
 import it.university.advprog.repository.EmployeeRepository;
 import it.university.advprog.repository.mongo.EmployeeMongoRepository;
 

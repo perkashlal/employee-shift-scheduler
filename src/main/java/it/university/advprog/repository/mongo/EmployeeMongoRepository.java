@@ -1,8 +1,10 @@
 package it.university.advprog.repository.mongo;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import it.university.advprog.Employee;
+
+import it.university.advprog.model.Employee;
 import it.university.advprog.repository.EmployeeRepository;
+
 import org.bson.Document;
 import java.util.List;
 import java.util.Optional;

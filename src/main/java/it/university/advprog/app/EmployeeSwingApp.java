@@ -10,10 +10,10 @@ import javax.swing.SwingUtilities;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
+import it.university.advprog.controller.EmployeeController;
+import it.university.advprog.controller.EmployeeControllerImpl;
 import it.university.advprog.repository.EmployeeRepository;
 import it.university.advprog.repository.mongo.EmployeeMongoRepository;
-import it.university.advprog.ui.EmployeeController;
-import it.university.advprog.ui.EmployeeControllerImpl;
 import it.university.advprog.ui.EmployeeView;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;

@@ -1,4 +1,4 @@
-package it.university.advprog;
+package it.university.advprog.model;
 
 import java.util.Objects;
 

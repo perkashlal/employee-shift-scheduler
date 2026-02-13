@@ -1,4 +1,6 @@
-package it.university.advprog.ui;
+package it.university.advprog.controller;
+
+import it.university.advprog.ui.EmployeeViewInterface;
 
 public interface EmployeeController {
 

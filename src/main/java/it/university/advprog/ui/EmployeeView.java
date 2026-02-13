@@ -1,6 +1,8 @@
 package it.university.advprog.ui;
 
-import it.university.advprog.Employee;
+import it.university.advprog.controller.EmployeeController;
+import it.university.advprog.model.Employee;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;

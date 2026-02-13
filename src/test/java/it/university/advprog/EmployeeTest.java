@@ -1,6 +1,9 @@
 package it.university.advprog;
 
 import org.junit.jupiter.api.Test;
+
+import it.university.advprog.model.Employee;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class EmployeeTest {
