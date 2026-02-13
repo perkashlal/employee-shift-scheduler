@@ -1,7 +1,6 @@
 package it.university.advprog;
 
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class EmployeeTest {
@@ -30,7 +29,19 @@ class EmployeeTest {
     @Test
     void equalsShouldBeFalseWhenNameOrIdDiffers() {
         Employee base = new Employee("1", "Alice");
-        assertNotEquals(base, new Employee("1", "Bob"));     // different name
-        assertNotEquals(base, new Employee("2", "Alice"));   // different id
+        assertNotEquals(base, new Employee("1", "Bob")); 
+        assertNotEquals(base, new Employee("2", "Alice"));
+    }
+    @Test
+    void equalsShouldShortCircuitWhenIdDiffersEvenIfNameIsSame() {
+        Employee base = new Employee("1", "Alice");
+        Employee sameNameDifferentId = new Employee("2", "Alice");
+
+        assertNotEquals(base, sameNameDifferentId);
+    }
+    @Test
+    void equalsShouldBeTrueForSameReference() {
+        Employee e = new Employee("1", "Alice");
+        assertEquals(e, e);
     }
 }
