@@ -12,3 +12,5 @@ target/
 Thumbs.db
 .metadata/ 
 /bin/
+.mvn/ 
+.sonarlint/ 
