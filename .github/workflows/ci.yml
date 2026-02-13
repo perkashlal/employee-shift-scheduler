@@ -32,8 +32,12 @@ jobs:
       - name: Run unit tests (Surefire only)
         run: xvfb-run -a mvn -B -ntp clean test
 
+<<<<<<< HEAD
       - name: Upload surefire reports
         if: always()
+=======
+      - if: always()
+>>>>>>> 16871ff6c695f8ad7549b10f6372c5ec05eecc04
         uses: actions/upload-artifact@v4
         with:
           name: surefire-reports
@@ -58,14 +62,19 @@ jobs:
           java-version: "17"
           cache: maven
 
+<<<<<<< HEAD
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
+=======
+      - run: sudo apt-get update && sudo apt-get install -y xvfb
+>>>>>>> 16871ff6c695f8ad7549b10f6372c5ec05eecc04
 
       - name: Docker info
         run: |
           docker version
           docker info
 
+<<<<<<< HEAD
       # IMPORTANT:
       # -DskipTests skips unit tests (Surefire)
       # Failsafe integration tests still run during verify
@@ -74,6 +83,12 @@ jobs:
 
       - name: Upload failsafe reports
         if: always()
+=======
+      - name: Run integration + e2e tests (Failsafe)
+        run: xvfb-run -a mvn -B -ntp verify
+
+      - if: always()
+>>>>>>> 16871ff6c695f8ad7549b10f6372c5ec05eecc04
         uses: actions/upload-artifact@v4
         with:
           name: failsafe-reports
@@ -99,8 +114,12 @@ jobs:
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
+<<<<<<< HEAD
       # Runs unit tests + generates JaCoCo report, skipping IT/E2E
       - name: Run unit tests with JaCoCo (skip IT/E2E)
+=======
+      - name: Run unit tests with JaCoCo (skip IT/E2E in coverage job)
+>>>>>>> 16871ff6c695f8ad7549b10f6372c5ec05eecc04
         run: xvfb-run -a mvn -B -ntp clean verify -Pjacoco -DskipITs
 
       - name: Upload JaCoCo report
@@ -111,6 +130,10 @@ jobs:
           path: |
             **/target/site/jacoco/**
             **/target/site/jacoco-it/**
+<<<<<<< HEAD
             **/target/site/jacoco/jacoco.xml
             **/target/site/jacoco-it/jacoco.xml
           if-no-files-found: warn
+=======
+          if-no-files-found: warn
+>>>>>>> 16871ff6c695f8ad7549b10f6372c5ec05eecc04
