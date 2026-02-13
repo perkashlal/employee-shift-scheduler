@@ -1,7 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
@@ -10,41 +11,52 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
+  <name>Employee Shift Scheduler</name>
+
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <junit.jupiter.version>5.10.1</junit.jupiter.version>
     <assertj.version>3.24.2</assertj.version>
+    <assertj.swing.version>3.17.1</assertj.swing.version>
     <mockito.version>5.8.0</mockito.version>
     <mongodb.driver.version>4.11.1</mongodb.driver.version>
     <testcontainers.version>1.19.7</testcontainers.version>
+    <embedded.mongo.version>1.45.0</embedded.mongo.version>
+    <picocli.version>4.6.1</picocli.version>
     <slf4j.simple.version>2.0.12</slf4j.simple.version>
 
     <surefire.version>3.2.5</surefire.version>
     <failsafe.version>3.2.5</failsafe.version>
-    <jacoco.version>0.8.11</jacoco.version>
     <buildhelper.version>3.4.0</buildhelper.version>
-
+    <jacoco.version>0.8.11</jacoco.version>
+    <sonar.maven.plugin.version>3.11.0.3922</sonar.maven.plugin.version>
     <pitest.version>1.15.6</pitest.version>
     <pitest.junit5.plugin.version>1.2.1</pitest.junit5.plugin.version>
 
-    <jacocoArgLine></jacocoArgLine>
+    <surefireArgLine/>
+    <failsafeArgLine/>
+
+    <sonar.projectKey>employee-shift-scheduler</sonar.projectKey>
+    <sonar.projectName>Employee Shift Scheduler</sonar.projectName>
+    <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+
+    <sonar.junit.reportPaths>
+      ${project.build.directory}/surefire-reports,${project.build.directory}/failsafe-reports
+    </sonar.junit.reportPaths>
+
+    <sonar.coverage.exclusions>
+      **/repository/mongo/MongoConfig.*,
+      **/app/EmployeeSwingApp.*,
+      **/ui/EmployeeView.*
+    </sonar.coverage.exclusions>
   </properties>
 
   <dependencies>
-
-    <!-- JUnit -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
       <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
@@ -55,19 +67,23 @@
       <version>4.13.2</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
 
-    <!-- Assertions & mocks -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>${assertj.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-swing-junit</artifactId>
-      <version>3.17.1</version>
+      <version>${assertj.swing.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -78,21 +94,18 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Mongo -->
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-sync</artifactId>
       <version>${mongodb.driver.version}</version>
     </dependency>
 
-    <!-- Testcontainers -->
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>mongodb</artifactId>
@@ -100,64 +113,72 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Embedded Mongo for IT -->
     <dependency>
       <groupId>de.bwaldvogel</groupId>
       <artifactId>mongo-java-server</artifactId>
-      <version>1.45.0</version>
+      <version>${embedded.mongo.version}</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- CLI -->
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-      <version>4.6.1</version>
+      <version>${picocli.version}</version>
     </dependency>
 
-    <!-- Logging -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
       <version>${slf4j.simple.version}</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${failsafe.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>${buildhelper.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${jacoco.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>${sonar.maven.plugin.version}</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.pitest</groupId>
+          <artifactId>pitest-maven</artifactId>
+          <version>${pitest.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
-
-      <!-- JaCoCo -->
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${jacoco.version}</version>
-        <executions>
-          <execution>
-            <id>prepare-agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-            <configuration>
-              <propertyName>jacocoArgLine</propertyName>
-            </configuration>
-          </execution>
-          <execution>
-            <id>report</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- IT & E2E sources -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>${buildhelper.version}</version>
         <executions>
           <execution>
             <id>add-test-sources</id>
@@ -175,11 +196,9 @@
         </executions>
       </plugin>
 
-      <!-- Unit tests -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
         <configuration>
           <useModulePath>false</useModulePath>
           <excludes>
@@ -187,7 +206,7 @@
             <exclude>**/*E2E.java</exclude>
           </excludes>
           <argLine>
-            ${jacocoArgLine}
+            @{surefireArgLine}
             --add-opens java.base/java.util=ALL-UNNAMED
             --add-opens java.base/java.lang=ALL-UNNAMED
             --add-opens java.desktop/java.awt=ALL-UNNAMED
@@ -196,17 +215,15 @@
         </configuration>
       </plugin>
 
-      <!-- Integration + E2E -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${failsafe.version}</version>
         <configuration>
           <useModulePath>false</useModulePath>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
           <argLine>
-            ${jacocoArgLine}
+            @{failsafeArgLine}
             --add-opens java.base/java.util=ALL-UNNAMED
             --add-opens java.base/java.lang=ALL-UNNAMED
             --add-opens java.desktop/java.awt=ALL-UNNAMED
@@ -248,7 +265,7 @@
           </execution>
 
           <execution>
-            <id>verify-all</id>
+            <id>verify</id>
             <phase>verify</phase>
             <goals>
               <goal>verify</goal>
@@ -257,11 +274,9 @@
         </executions>
       </plugin>
 
-      <!-- PIT -->
       <plugin>
         <groupId>org.pitest</groupId>
         <artifactId>pitest-maven</artifactId>
-        <version>${pitest.version}</version>
         <configuration>
           <jvmArgs>
             <param>--add-opens=java.base/java.util=ALL-UNNAMED</param>
@@ -269,12 +284,14 @@
             <param>--add-opens=java.desktop/java.awt=ALL-UNNAMED</param>
             <param>--add-opens=java.desktop/javax.swing=ALL-UNNAMED</param>
           </jvmArgs>
+
           <targetClasses>
             <param>it.university.advprog.*</param>
           </targetClasses>
           <targetTests>
             <param>it.university.advprog.*</param>
           </targetTests>
+
           <excludedTestClasses>
             <param>it.university.advprog.ui.*</param>
           </excludedTestClasses>
@@ -283,12 +300,14 @@
             <param>it.university.advprog.app.*</param>
             <param>it.university.advprog.repository.mongo.*</param>
           </excludedClasses>
+
           <outputFormats>
             <param>HTML</param>
             <param>XML</param>
           </outputFormats>
           <threads>4</threads>
         </configuration>
+
         <dependencies>
           <dependency>
             <groupId>org.pitest</groupId>
@@ -298,7 +317,100 @@
         </dependencies>
       </plugin>
 
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
+      </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+
+              <execution>
+                <id>jacoco-unit</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <destFile>${project.build.directory}/jacoco.exec</destFile>
+                  <propertyName>surefireArgLine</propertyName>
+                  <append>true</append>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>jacoco-it</id>
+                <goals>
+                  <goal>prepare-agent-integration</goal>
+                </goals>
+                <configuration>
+                  <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                  <propertyName>failsafeArgLine</propertyName>
+                  <append>true</append>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>report-unit</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report</goal>
+                </goals>
+                <configuration>
+                  <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                  <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+                  <excludes>
+                    <exclude>**/repository/mongo/MongoConfig.*</exclude>
+                    <exclude>**/app/EmployeeSwingApp.*</exclude>
+                    <exclude>**/ui/EmployeeView.*</exclude>
+                  </excludes>
+                  <formats>
+                    <format>HTML</format>
+                    <format>XML</format>
+                  </formats>
+                </configuration>
+              </execution>
+
+              <execution>
+                <id>report-it</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>report-integration</goal>
+                </goals>
+                <configuration>
+                  <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
+                  <outputDirectory>${project.build.directory}/site/jacoco-it</outputDirectory>
+                  <excludes>
+                    <exclude>**/repository/mongo/MongoConfig.*</exclude>
+                    <exclude>**/app/EmployeeSwingApp.*</exclude>
+                    <exclude>**/ui/EmployeeView.*</exclude>
+                  </excludes>
+                  <formats>
+                    <format>HTML</format>
+                    <format>XML</format>
+                  </formats>
+                </configuration>
+              </execution>
+
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+
+      <properties>
+        <sonar.coverage.jacoco.xmlReportPaths>
+          ${project.build.directory}/site/jacoco/jacoco.xml,${project.build.directory}/site/jacoco-it/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>
