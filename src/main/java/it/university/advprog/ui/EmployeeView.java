@@ -114,17 +114,30 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
         btnRemoveEmployee.setEnabled(hasId);
     }
 
+    private void clearFieldsAndUpdateButtons() {
+        txtEmployeeId.setText("");
+        txtEmployeeName.setText("");
+        updateButtonStates();
+    }
+
     private void handleAddEmployee() {
-        String id = txtEmployeeId.getText().trim();
-        String name = txtEmployeeName.getText().trim();
+        final String id = txtEmployeeId.getText().trim();
+        final String name = txtEmployeeName.getText().trim();
 
         if (employeeController != null) {
             employeeController.addEmployee(id, name);
         }
 
-        txtEmployeeId.setText("");
-        txtEmployeeName.setText("");
-        updateButtonStates();
+        // Deterministic UI update for CI / headless Swing testing
+        if (SwingUtilities.isEventDispatchThread()) {
+            clearFieldsAndUpdateButtons();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(this::clearFieldsAndUpdateButtons);
+            } catch (Exception ex) {
+                SwingUtilities.invokeLater(this::clearFieldsAndUpdateButtons);
+            }
+        }
     }
 
     private void handleRemoveEmployee() {
