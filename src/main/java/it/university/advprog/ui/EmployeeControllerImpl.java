@@ -24,7 +24,7 @@ public class EmployeeControllerImpl implements EmployeeController {
             for (Employee e : employees) {
                 view.employeeAdded(e);
             }
-            view.showError(""); // clear any old error
+            view.showError(""); 
         } catch (Exception ex) {
             view.showError("Cannot load employees: " + ex.getMessage());
         }
