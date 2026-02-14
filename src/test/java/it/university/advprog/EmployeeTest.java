@@ -26,7 +26,7 @@ class EmployeeTest {
 
         assertNotEquals(a1, b);
         assertNotEquals(a1, null);
-        assertNotEquals(a1, "not-an-employee");
+        assertNotEquals(a1,"not-an-employee");
     }
 
     @Test

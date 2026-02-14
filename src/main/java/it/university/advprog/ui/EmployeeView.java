@@ -27,7 +27,7 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
 
     private JLabel errorMessageLabel;
 
-    private EmployeeController employeeController;
+    private transient EmployeeController employeeController;
 
     public EmployeeView() {
         this(null);
@@ -39,7 +39,7 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
         setName("employeeView");
         setTitle("Employee View");
 
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         initUI();
         initListeners();
@@ -124,19 +124,23 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
         final String id = txtEmployeeId.getText().trim();
         final String name = txtEmployeeName.getText().trim();
 
-        if (employeeController != null) {
-            employeeController.addEmployee(id, name);
+        // validation (important for deterministic tests)
+        if (id.isEmpty() || name.isEmpty()) {
+            return;
         }
 
-        // Deterministic UI update for CI / headless Swing testing
+        if (employeeController == null) {
+            return;
+        }
+
+        // business logic first (no UI thread tricks here)
+        employeeController.addEmployee(id, name);
+
+        // UI update must ALWAYS happen on EDT — but never block
         if (SwingUtilities.isEventDispatchThread()) {
             clearFieldsAndUpdateButtons();
         } else {
-            try {
-                SwingUtilities.invokeAndWait(this::clearFieldsAndUpdateButtons);
-            } catch (Exception ex) {
-                SwingUtilities.invokeLater(this::clearFieldsAndUpdateButtons);
-            }
+            SwingUtilities.invokeLater(this::clearFieldsAndUpdateButtons);
         }
     }
 

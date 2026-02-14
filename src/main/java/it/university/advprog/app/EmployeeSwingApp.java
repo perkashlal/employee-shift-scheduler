@@ -4,8 +4,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.concurrent.Callable;
 
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -54,7 +54,7 @@ public class EmployeeSwingApp implements Callable<Integer> {
                 view.setEmployeeController(controller);
 
                 // IMPORTANT for tests: NEVER EXIT_ON_CLOSE
-                view.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                view.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
                 view.addWindowListener(new WindowAdapter() {
                     @Override
