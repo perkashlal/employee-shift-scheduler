@@ -1,6 +1,0 @@
-sonar.organization=perkashlal
-sonar.projectKey=perkashlal_employee-shift-scheduler
-sonar.sources=src/main/java
-sonar.tests=src/test/java,src/it/java,src/e2e/java
-sonar.java.binaries=target/classes
-sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
