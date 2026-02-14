@@ -10,15 +10,19 @@ jobs:
     timeout-minutes: 25
 
     env:
+      # Make Testcontainers use the runner Docker engine correctly
+      DOCKER_HOST: unix:///var/run/docker.sock
+      DOCKER_API_VERSION: "1.44"
+      # Optional (stability): Ryuk sometimes fails in restricted envs
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
-      # checkout full history (important for Sonar blame)
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Java 17
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -26,31 +30,25 @@ jobs:
           distribution: temurin
           cache: maven
 
-      # cache sonar + maven
-      - name: Cache Maven + Sonar
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.m2
-            ~/.sonar/cache
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml', '**/*.yml') }}
-          restore-keys: ${{ runner.os }}-m2-
-
-      
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-    
-      - name: Enable SonarCloud goal
+      # Sanity check: prove Docker is available and show API/server versions
+      - name: Docker info
+        run: |
+          docker version
+          docker info
+
+      - name: Set Maven Additional Goals
         if: ${{ env.SONAR_TOKEN }}
         run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
 
-     
-      - name: Build + Test + Coverage + SonarCloud
+      # EXACT professor approach: one Maven command runs everything
+      - name: Build with Maven and SonarCloud
         run: >
           xvfb-run -a mvn -B -ntp verify -Pjacoco $SONARGOAL
           -Dsonar.organization=perkashlal
-          -Dsonar.projectKey=perkashlal_employee-shift
           -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.projectKey=perkashlal_employee-shift
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
