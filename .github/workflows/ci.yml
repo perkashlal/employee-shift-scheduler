@@ -136,3 +136,4 @@ jobs:
             -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
             -Dsonar.token=${SONAR_TOKEN} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml
