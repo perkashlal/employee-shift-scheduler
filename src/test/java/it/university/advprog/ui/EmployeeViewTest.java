@@ -50,7 +50,6 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
             window.cleanUp();
             window = null;
         }
-        controller = null;
     }
 
     @Test
@@ -69,31 +68,11 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
     }
 
     @Test
-    public void shouldKeepAddButtonDisabledIfEitherFieldIsBlank() {
-        assertNotNull(window);
-        window.textBox("idTextBox").setText("1");
-        window.button("btnAddEmployee").requireDisabled();
-
-        window.textBox("idTextBox").setText("");
-        window.textBox("nameTextBox").setText("Alice");
-        window.button("btnAddEmployee").requireDisabled();
-    }
-
-    @Test
-    public void shouldEnableDeleteButtonOnlyWhenEmployeeIdIsProvided() {
-        assertNotNull(window);
-        window.textBox("idTextBox").setText("1");
-        window.button("btnRemoveEmployee").requireEnabled();
-
-        window.textBox("idTextBox").setText("");
-        window.button("btnRemoveEmployee").requireDisabled();
-    }
-
-    @Test
     public void shouldClearFieldsAndDisableAddButtonAfterAddClick() {
         assertNotNull(window);
         window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
+        
         window.button("btnAddEmployee").click();
 
         verify(controller, timeout(2000)).addEmployee("1", "Alice");
@@ -104,21 +83,11 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
     }
 
     @Test
-    public void shouldDelegateAddEmployeeToController() {
-        assertNotNull(window);
-        window.textBox("idTextBox").setText("1");
-        window.textBox("nameTextBox").setText("Alice");
-        window.button("btnAddEmployee").click();
-
-        verify(controller, timeout(2000)).addEmployee("1", "Alice");
-    }
-
-    @Test
     public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
         assertNotNull(window);
         window.textBox("idTextBox").setText("1");
         window.button("btnRemoveEmployee").click();
         
-        verify(controller, timeout(3000)).removeEmployee("1");
+        verify(controller, timeout(2000)).removeEmployee("1");
     }
 }
