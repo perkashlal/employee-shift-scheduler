@@ -1,47 +1,84 @@
 name: CI
 
 on:
-push:
-branches: [ "main", "master" ]
-pull_request:
+  push:
+    branches: ["main", "master"]
+  pull_request:
 
-jobs:
-build:
-runs-on: ubuntu-latest
-
-```
 permissions:
   contents: read
 
-env:
-  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
 
-steps:
-  - name: Checkout
-    uses: actions/checkout@v4
-    with:
-      fetch-depth: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  - name: Set up Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: 17
-      cache: maven
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
 
-  # GUI tests (Swing)
-  - name: Install Xvfb
-    run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth
 
-  # IMPORTANT: verify docker is available for Testcontainers
-  - name: Verify Docker
-    run: docker info
+      - name: Ensure Docker is usable for Testcontainers
+        run: |
+          unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
+          docker version
+          docker info
 
-  # Run tests + coverage + sonar
-  - name: Build and analyze
-    run: |
-      xvfb-run -a mvn -B -ntp verify -Pjacoco sonar:sonar \
-      -Dsonar.organization=perkashlal \
-      -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
-      -Dsonar.host.url=https://sonarcloud.io
-```
+      - name: Build + Unit + IT + E2E (+ JaCoCo) (+ SonarCloud)
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          MVN_BASE_ARGS=(
+            -B
+            -ntp
+            verify
+            -Pjacoco
+            -Dmaven.wagon.http.retryHandler.count=3
+            -Dmaven.wagon.httpconnectionManager.ttlSeconds=30
+          )
+
+          if [[ -n "${SONAR_TOKEN:-}" ]]; then
+            xvfb-run -a mvn "${MVN_BASE_ARGS[@]}" sonar:sonar \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.organization=perkashlal \
+              -Dsonar.projectKey=perkashlal_employee-shift-scheduler
+          else
+            xvfb-run -a mvn "${MVN_BASE_ARGS[@]}"
+          fi
+
+      - name: Dump quick diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== Docker version ==="
+          docker version || true
+          echo "=== Docker info ==="
+          docker info || true
+          echo "=== Running containers ==="
+          docker ps -a || true
+          echo "=== target folders ==="
+          find . -maxdepth 3 -type d -name target -print || true
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            **/target/surefire-reports/**
+            **/target/failsafe-reports/**
+            **/target/*.log
+          if-no-files-found: ignore
