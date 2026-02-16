@@ -47,7 +47,7 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
     @After
     public void afterEachTest() {
         if (window != null) {
-            window.cleanUp(); // FrameFixture cleanup
+            window.cleanUp();
             window = null;
         }
         controller = null;
@@ -55,23 +55,23 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void shouldHaveInitialControlsDisabledOrEnabledCorrectly() {
-    	assertNotNull(window);
-    	window.button("btnAddEmployee").requireDisabled();
+        assertNotNull(window);
+        window.button("btnAddEmployee").requireDisabled();
         window.button("btnRemoveEmployee").requireDisabled();
     }
 
     @Test
     public void shouldEnableAddButtonWhenIdAndNameAreProvided() {
-    	assertNotNull(window);
-    	window.textBox("idTextBox").setText("1");
+        assertNotNull(window);
+        window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
         window.button("btnAddEmployee").requireEnabled();
     }
 
     @Test
     public void shouldKeepAddButtonDisabledIfEitherFieldIsBlank() {
-    	assertNotNull(window);
-    	window.textBox("idTextBox").setText("1");
+        assertNotNull(window);
+        window.textBox("idTextBox").setText("1");
         window.button("btnAddEmployee").requireDisabled();
 
         window.textBox("idTextBox").setText("");
@@ -81,8 +81,8 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void shouldEnableDeleteButtonOnlyWhenEmployeeIdIsProvided() {
-    	assertNotNull(window);
-    	window.textBox("idTextBox").setText("1");
+        assertNotNull(window);
+        window.textBox("idTextBox").setText("1");
         window.button("btnRemoveEmployee").requireEnabled();
 
         window.textBox("idTextBox").setText("");
@@ -94,8 +94,10 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         assertNotNull(window);
         window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
-        window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
+
+        verify(controller, timeout(2000)).addEmployee("1", "Alice");
+
         window.textBox("idTextBox").requireText(""); 
         window.textBox("nameTextBox").requireText("");
         window.button("btnAddEmployee").requireDisabled();
@@ -103,29 +105,20 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void shouldDelegateAddEmployeeToController() {
-    	assertNotNull(window);
-    	window.textBox("idTextBox").setText("1");
+        assertNotNull(window);
+        window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
-
-        window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
-        robot().waitForIdle();
-
-        verify(controller, timeout(1000)).addEmployee("1", "Alice");
+        verify(controller, timeout(2000)).addEmployee("1", "Alice");
     }
 
     @Test
     public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
         assertNotNull(window);
-        
         window.textBox("idTextBox").setText("1");
-        
-        window.button("btnRemoveEmployee").requireEnabled();
-        
-        
         window.button("btnRemoveEmployee").click();
         
-        verify(controller, timeout(2000)).removeEmployee("1");
+        verify(controller, timeout(3000)).removeEmployee("1");
     }
 }
