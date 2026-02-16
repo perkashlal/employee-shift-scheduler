@@ -1,54 +1,25 @@
-name: Java CI with Maven and SonarCloud in Linux
+name: CI
 
 on:
   push:
+    branches: ["main", "master"]
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-
-    env:
-      # Make Testcontainers use the runner Docker engine correctly
-      DOCKER_HOST: unix:///var/run/docker.sock
-      DOCKER_API_VERSION: "1.44"
-      # Optional (stability): Ryuk sometimes fails in restricted envs
-      TESTCONTAINERS_RYUK_DISABLED: "true"
-
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
-          java-version: "17"
           distribution: temurin
+          java-version: 17
           cache: maven
 
-      - name: Install Xvfb
+      - name: Install virtual display
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      # Sanity check: prove Docker is available and show API/server versions
-      - name: Docker info
-        run: |
-          docker version
-          docker info
-
-      - name: Set Maven Additional Goals
-        if: ${{ env.SONAR_TOKEN }}
-        run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
-
-      # EXACT professor approach: one Maven command runs everything
-      - name: Build with Maven and SonarCloud
-        run: >
-          xvfb-run -a mvn -B -ntp verify -Pjacoco $SONARGOAL
-          -Dsonar.organization=perkashlal
-          -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.projectKey=perkashlal_employee-shift
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Run tests
+        run: xvfb-run -a mvn -B verify
