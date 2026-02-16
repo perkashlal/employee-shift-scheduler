@@ -125,7 +125,7 @@ jobs:
             **/target/site/jacoco/**
             **/target/site/jacoco/jacoco.xml
           if-no-files-found: ignore
-      - name: Verify + SonarCloud
+      - name: Verify(unit+IT) + SonarCloud
         env:
      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   run: >
