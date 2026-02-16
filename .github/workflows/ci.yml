@@ -38,10 +38,11 @@ jobs:
       - name: Install Xvfb and Socat
         run: sudo apt-get update && sudo apt-get install -y xvfb socat
 
-      - name: Create Docker TCP Bridge
-        # This bridges the Unix socket to TCP port 2375 so your tests can find it
+      - name: Start Docker TCP Bridge
+        # This forces the Unix socket to be available on a TCP port your Java client can understand
         run: |
           sudo socat TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &
+          sleep 5
           docker version
 
       - name: Enable Sonar goal when token exists
@@ -50,8 +51,11 @@ jobs:
 
       - name: Build, test, coverage, (optional) Sonar
         env:
-          # Tell the project to look at the local TCP bridge we just created
-          DOCKER_HOST: tcp://localhost:2375
+          # Tell Testcontainers to use the bridge we just created
+          DOCKER_HOST: tcp://127.0.0.1:2375
+          # Disable the internal version check that is failing
+          TESTCONTAINERS_CHECKS_DISABLE: "true"
+          # Force the API version to match the runner
           DOCKER_API_VERSION: "1.44"
         run: >
           xvfb-run -a mvn -B -ntp verify -Pjacoco ${{ env.SONARGOAL }}
