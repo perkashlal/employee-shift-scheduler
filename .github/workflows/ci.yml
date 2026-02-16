@@ -1,33 +1,137 @@
 name: CI
-on: [push, pull_request]
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  unit-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
 
-      - name: Install System Dependencies
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Run unit tests (Surefire)
+        run: xvfb-run -a mvn -B -ntp clean test
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: |
+            **/target/surefire-reports/**
+          if-no-files-found: warn
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install Xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Docker info
+        run: |
+          docker version
+          docker info
+
+      # Runs Failsafe only (integration/e2e), skips Surefire unit tests
+      - name: Run integration + e2e tests (Failsafe)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
+          export DOCKER_HOST=unix:///var/run/docker.sock
+          xvfb-run -a mvn -B -ntp verify -DskipTests -DskipITs=false
+
+      - name: Upload failsafe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failsafe-reports
+          path: |
+            **/target/failsafe-reports/**
+          if-no-files-found: ignore
+
+  coverage-sonar:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # required for SonarCloud blame/branch analysis
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install Xvfb + lightweight WM (stable Swing tests)
         run: |
           sudo apt-get update
-          sudo apt-get install -y socat netcat-openbsd xvfb
+          sudo apt-get install -y xvfb openbox
 
-      - name: Setup Docker Socket Bridge
-        run: |
-          sudo chmod 666 /var/run/docker.sock
-          # Bridges the unix socket to a TCP port for Testcontainers
-          sudo socat TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &
-          timeout 30s sh -c 'until nc -z localhost 2375; do sleep 1; done'
-
-      - name: Build and Test with Maven
+      # Runs unit tests + generates JaCoCo XML, skipping IT/E2E
+      - name: Run unit tests with JaCoCo (skip IT/E2E)
+        shell: bash
         env:
-          DOCKER_HOST: tcp://127.0.0.1:2375
-          DOCKER_API_VERSION: "1.44"
-          TESTCONTAINERS_CHECKS_DISABLE: "true"
-        run: xvfb-run --server-args="-screen 0 1280x1024x24" mvn -B verify -Pjacoco
+          JAVA_TOOL_OPTIONS: "-Djava.awt.headless=false"
+        run: |
+          set -euxo pipefail
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1280x1024x24 -ac +extension RANDR &
+          openbox-session >/dev/null 2>&1 &
+          sleep 2
+          mvn -B -ntp clean verify -Pjacoco -DskipITs
+
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            **/target/site/jacoco/**
+            **/target/site/jacoco/jacoco.xml
+          if-no-files-found: warn
+
+      - name: SonarCloud Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn -B -ntp sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=perkashlal \
+            -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
