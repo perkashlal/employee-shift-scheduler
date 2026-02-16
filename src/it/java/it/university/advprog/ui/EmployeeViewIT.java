@@ -1,17 +1,15 @@
 package it.university.advprog.ui;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+import org.assertj.swing.timing.Pause;
+import org.assertj.swing.timing.Condition;
 import java.net.InetSocketAddress;
-
 import org.assertj.swing.edt.GuiActionRunner;
 import org.assertj.swing.fixture.FrameFixture;
 import org.assertj.swing.junit.testcase.AssertJSwingJUnitTestCase;
 import org.junit.Test;
-
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-
 import de.bwaldvogel.mongo.MongoServer;
 import de.bwaldvogel.mongo.backend.memory.MemoryBackend;
 import it.university.advprog.controller.EmployeeController;
@@ -74,7 +72,6 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
         window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
 
-        // ✅ wait until DocumentListener enables the button
         window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
@@ -82,15 +79,22 @@ public class EmployeeViewIT extends AssertJSwingJUnitTestCase {
                 .isPresent()
                 .contains(new Employee("1", "Alice"));
     }
-
     @Test
     public void shouldRemoveEmployeeThroughUI() {
-        repository.save(new Employee("2", "Bob"));
-
         window.textBox("idTextBox").setText("2");
-
+        window.textBox("nameTextBox").setText("Bob");
+        window.button("btnAddEmployee").requireEnabled();
+        window.button("btnAddEmployee").click();
+        window.list("employeeList").selectItem(0);
         window.button("btnRemoveEmployee").requireEnabled();
         window.button("btnRemoveEmployee").click();
+
+        Pause.pause(new Condition("employee removed from repository") {
+            @Override
+            public boolean test() {
+                return repository.findById("2").isEmpty();
+            }
+        }, 2000);
 
         assertThat(repository.findById("2")).isEmpty();
     }

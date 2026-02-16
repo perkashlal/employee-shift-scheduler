@@ -2,7 +2,6 @@ package it.university.advprog.ui;
 
 import it.university.advprog.controller.EmployeeController;
 import it.university.advprog.model.Employee;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -38,7 +37,6 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
 
         setName("employeeView");
         setTitle("Employee View");
-
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         initUI();
@@ -102,6 +100,19 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
         txtEmployeeId.getDocument().addDocumentListener(fieldListener);
         txtEmployeeName.getDocument().addDocumentListener(fieldListener);
 
+        employeeList.addListSelectionListener(e -> {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            String row = employeeList.getSelectedValue();
+            if (row != null) {
+                int sep = row.indexOf(" - ");
+                String id = (sep >= 0) ? row.substring(0, sep).trim() : row.trim();
+                txtEmployeeId.setText(id);
+            }
+            updateButtonStates();
+        });
+
         btnAddEmployee.addActionListener(e -> handleAddEmployee());
         btnRemoveEmployee.addActionListener(e -> handleRemoveEmployee());
     }
@@ -124,19 +135,15 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
         final String id = txtEmployeeId.getText().trim();
         final String name = txtEmployeeName.getText().trim();
 
-        // validation (important for deterministic tests)
         if (id.isEmpty() || name.isEmpty()) {
             return;
         }
-
         if (employeeController == null) {
             return;
         }
 
-        // business logic first (no UI thread tricks here)
         employeeController.addEmployee(id, name);
 
-        // UI update must ALWAYS happen on EDT — but never block
         if (SwingUtilities.isEventDispatchThread()) {
             clearFieldsAndUpdateButtons();
         } else {
@@ -146,12 +153,19 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
 
     private void handleRemoveEmployee() {
         String id = txtEmployeeId.getText().trim();
+        if (id.isEmpty()) {
+            return;
+        }
 
         if (employeeController != null) {
             employeeController.removeEmployee(id);
         }
 
-        updateButtonStates();
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateButtonStates();
+        } else {
+            SwingUtilities.invokeLater(this::updateButtonStates);
+        }
     }
 
     @Override
@@ -177,6 +191,10 @@ public class EmployeeView extends JFrame implements EmployeeViewInterface {
                     break;
                 }
             }
+            if (id.equals(txtEmployeeId.getText().trim())) {
+                txtEmployeeId.setText("");
+            }
+            updateButtonStates();
             errorMessageLabel.setText("");
         });
     }
