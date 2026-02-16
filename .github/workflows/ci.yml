@@ -1,65 +1,27 @@
 name: CI
-
-on:
-  push:
-    branches: [ "main", "master" ]
-  pull_request:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_ORG: perkashlal
-      SONAR_PROJECT_KEY: perkashlal_employee-shift-scheduler
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Java
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
-          cache: maven
-
-      - name: Install System Dependencies
-        run: sudo apt-get update && sudo apt-get install -y xvfb socat
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
 
       - name: Setup Docker Bridge
         run: |
           sudo chmod 666 /var/run/docker.sock
-          # Start the bridge in the background
           sudo socat TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &
-          # Wait for the bridge to be active
           timeout 30s sh -c 'until nc -z localhost 2375; do sleep 1; done'
-          docker version
-
-      - name: Enable Sonar goal when token exists
-        if: ${{ env.SONAR_TOKEN != '' }}
-        run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
 
       - name: Build and Test
         env:
           DOCKER_HOST: tcp://127.0.0.1:2375
           DOCKER_API_VERSION: "1.44"
           TESTCONTAINERS_CHECKS_DISABLE: "true"
-          JAVA_AWT_HEADLESS: "false" 
-        run: >
-          xvfb-run --server-args="-screen 0 1280x1024x24"
-          mvn -B -ntp verify -Pjacoco ${{ env.SONARGOAL }}
-          -Dsonar.organization=${{ env.SONAR_ORG }}
-          -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-          -Dsonar.host.url=https://sonarcloud.io
+        run: xvfb-run --server-args="-screen 0 1280x1024x24" mvn -B verify -Pjacoco
