@@ -13,19 +13,21 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Install Dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y socat netcat-openbsd xvfb
 
-      - name: Setup Docker Bridge
+      - name: Setup Docker Socket Bridge
         run: |
           sudo chmod 666 /var/run/docker.sock
+          # Bridges the unix socket to a TCP port for Testcontainers
           sudo socat TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &
           timeout 30s sh -c 'until nc -z localhost 2375; do sleep 1; done'
 
-      - name: Build and Test
+      - name: Build and Test with Maven
         env:
           DOCKER_HOST: tcp://127.0.0.1:2375
           DOCKER_API_VERSION: "1.44"
+          TESTCONTAINERS_CHECKS_DISABLE: "true"
         run: xvfb-run --server-args="-screen 0 1280x1024x24" mvn -B verify -Pjacoco
