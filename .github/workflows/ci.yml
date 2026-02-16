@@ -2,30 +2,55 @@ name: CI
 
 on:
   push:
+    branches: ["main", "master"]
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # important for SonarCloud PR decoration + blame
 
-      - uses: actions/setup-java@v5
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
-          java-version: 17
           distribution: temurin
+          java-version: "17"
           cache: maven
 
-      - name: Install UI deps
+      - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Run build + tests + sonar
-        run: xvfb-run -a mvn -B verify -Pjacoco sonar:sonar
+      # IMPORTANT: make sure we are NOT forcing tcp://localhost:2375 or old API versions
+      - name: Ensure Docker is usable for Testcontainers
+        run: |
+          unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
+          echo "DOCKER_HOST=$DOCKER_HOST"
+          docker version
+          docker info
+
+      # Decide sonar goal only if token exists (same idea as professor)
+      - name: Set Sonar goal
+        run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+
+      - name: Build + Unit + IT + E2E (+ JaCoCo) (+ SonarCloud)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          xvfb-run -a mvn -B -ntp verify -Pjacoco $SONARGOAL
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.organization=perkashlal
+          -Dsonar.projectKey=perkashlal_employee-shift
