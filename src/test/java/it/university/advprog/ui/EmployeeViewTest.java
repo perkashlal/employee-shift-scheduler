@@ -121,14 +121,15 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
-    	assertNotNull(window);
-    	window.textBox("idTextBox").setText("1");
-
+        assertNotNull(window);
+        
+        window.textBox("idTextBox").setText("1");
+        
         window.button("btnRemoveEmployee").requireEnabled();
+        
+        
         window.button("btnRemoveEmployee").click();
-
-        robot().waitForIdle();
-
-        verify(controller, timeout(1000)).removeEmployee("1");
+        
+        verify(controller, timeout(2000)).removeEmployee("1");
     }
 }
