@@ -38,8 +38,6 @@ jobs:
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      # IMPORTANT: do NOT set DOCKER_HOST to tcp://localhost:2375 on ubuntu runners.
-      # GitHub hosted runners already have Docker via /var/run/docker.sock.
       - name: Verify Docker
         run: docker version && docker info
 
@@ -48,6 +46,9 @@ jobs:
         run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
 
       - name: Build, test, coverage, (optional) Sonar
+        env:
+          # Fix for "Could not find a valid Docker environment"
+          DOCKER_HOST: unix:///var/run/docker.sock
         run: >
           xvfb-run -a mvn -B -ntp verify -Pjacoco ${{ env.SONARGOAL }}
           -Dsonar.organization=${{ env.SONAR_ORG }}
