@@ -9,17 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
-    services:
-      docker:
-        image: docker:26-dind
-        options: --privileged
-        ports:
-          - 2375:2375
-
     env:
-      DOCKER_HOST: tcp://localhost:2375
-      DOCKER_TLS_CERTDIR: ""
-      TESTCONTAINERS_RYUK_DISABLED: "true"
+      DOCKER_HOST: unix:///var/run/docker.sock
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     steps:
@@ -34,24 +25,19 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Cache Maven + Sonar
+      - name: Cache Sonar
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.m2
-            ~/.sonar/cache
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml', '**/*.yml') }}
-          restore-keys: ${{ runner.os }}-m2-
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-sonar-
 
       - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Wait for Docker
+      - name: Docker check
         run: |
-          for i in {1..30}; do
-            docker version && break
-            sleep 2
-          done
+          docker version
           docker info
 
       - name: Set Maven Additional Goals
@@ -60,7 +46,7 @@ jobs:
 
       - name: Build with Maven and SonarCloud
         run: >
-          xvfb-run -a mvn -B -ntp verify -Pjacoco $SONARGOAL
+          xvfb-run -a mvn -B -ntp clean verify -Pjacoco $SONARGOAL
           -Dsonar.organization=perkashlal
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.projectKey=perkashlal_employee-shift
