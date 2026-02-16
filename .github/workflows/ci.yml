@@ -1,89 +1,43 @@
-name: CI
+name: Java CI with Maven, Docker and SonarCloud in Linux
 
 on:
   push:
-    branches: ["main", "master"]
   pull_request:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build:
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     runs-on: ubuntu-latest
-    timeout-minutes: 20
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: maven
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: Install Xvfb
-        run: sudo apt-get update && sudo apt-get install -y xvfb
-
-      # IMPORTANT: Do NOT set DOCKER_HOST. Use the default Unix socket on GitHub runner.
-      - name: Verify Docker works
-        run: |
-          docker version
-          docker info
-
-      - name: Build + Unit + IT + E2E (Testcontainers) + JaCoCo
-        run: xvfb-run -a mvn -B -ntp verify -Pjacoco
-
-      # SonarCloud only on push to main/master (secrets are not available on fork PRs)
-      - name: SonarCloud analysis
-        if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: >
-          mvn -B -ntp sonar:sonar
-          -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.organization=perkashlal
-          -Dsonar.projectKey=perkashlal_employee-shift-scheduler
-
-      - name: Upload surefire reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: surefire-reports
-          path: "**/target/surefire-reports/**"
-          if-no-files-found: warn
-
-      - name: Upload failsafe reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: failsafe-reports
-          path: "**/target/failsafe-reports/**"
-          if-no-files-found: warn
-
-      - name: Upload JaCoCo report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: |
-            **/target/site/jacoco/**
-            **/target/site/jacoco-it/**
-            **/target/site/jacoco/jacoco.xml
-            **/target/site/jacoco-it/jacoco.xml
-          if-no-files-found: warn
+    - uses: actions/checkout@v5
+      with:
+        # Shallow clones should be disabled for a better relevancy of SonarQube analysis
+        fetch-depth: 0
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        java-version: 17
+        distribution: 'temurin'
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.m2
+          ~/.sonar/cache
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml', '**/*.yml') }}
+        restore-keys: ${{ runner.os }}-m2-
+    - name: Set Maven Additional Goals
+      run: |
+        echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
+      if: ${{ env.SONAR_TOKEN }}
+    - name: Build with Maven and SonarCloud
+      run: >
+        xvfb-run mvn verify -Pjacoco $SONARGOAL
+        -Dsonar.organization=lorenzobettini-github
+        -Dsonar.host.url=https://sonarcloud.io
+        -Dsonar.projectKey=LorenzoBettini_sonarqube-example
+      working-directory: com.examples.school
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
