@@ -67,20 +67,28 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.button("btnAddEmployee").requireEnabled();
     }
 
+
     @Test
     public void shouldClearFieldsAndDisableAddButtonAfterAddClick() {
         window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
+
+        // ✅ wait until Swing has processed text events and enabled the button
+        window.button("btnAddEmployee").requireEnabled();
+
         window.button("btnAddEmployee").click();
 
-        // The timeout is crucial for GitHub Actions!
-        verify(controller, timeout(2000)).addEmployee("1", "Alice");
+        // ✅ ensure all pending UI events are processed (important in CI)
+        window.robot().waitForIdle();
 
-        window.textBox("idTextBox").requireText(""); 
+        // timeout can stay, but now it should consistently be invoked
+        verify(controller, timeout(5000)).addEmployee("1", "Alice");
+
+        window.textBox("idTextBox").requireText("");
         window.textBox("nameTextBox").requireText("");
         window.button("btnAddEmployee").requireDisabled();
     }
-
+    
     @Test
     public void shouldDelegateRemoveEmployeeToControllerWhenDeleteClicked() {
         assertNotNull(window);
