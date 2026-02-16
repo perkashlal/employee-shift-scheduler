@@ -47,8 +47,10 @@ jobs:
 
       - name: Build, test, coverage, (optional) Sonar
         env:
-          # Fix for "Could not find a valid Docker environment"
+          # Forces Testcontainers to find the Docker daemon
           DOCKER_HOST: unix:///var/run/docker.sock
+          # CRITICAL FIX: Upgrades the communication protocol to match the runner
+          DOCKER_API_VERSION: "1.44"
         run: >
           xvfb-run -a mvn -B -ntp verify -Pjacoco ${{ env.SONARGOAL }}
           -Dsonar.organization=${{ env.SONAR_ORG }}
