@@ -69,12 +69,11 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void shouldClearFieldsAndDisableAddButtonAfterAddClick() {
-        assertNotNull(window);
         window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
-        
         window.button("btnAddEmployee").click();
 
+        // The timeout is crucial for GitHub Actions!
         verify(controller, timeout(2000)).addEmployee("1", "Alice");
 
         window.textBox("idTextBox").requireText(""); 
