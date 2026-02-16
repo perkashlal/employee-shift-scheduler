@@ -39,26 +39,25 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y xvfb socat
 
       - name: Start Docker TCP Bridge
-        # This forces the Unix socket to be available on a TCP port your Java client can understand
         run: |
+          sudo chmod 666 /var/run/docker.sock
           sudo socat TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &
           sleep 5
-          docker version
 
       - name: Enable Sonar goal when token exists
         if: ${{ env.SONAR_TOKEN != '' }}
         run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
 
-      - name: Build, test, coverage, (optional) Sonar
+      - name: Build and Test
         env:
-          # Tell Testcontainers to use the bridge we just created
           DOCKER_HOST: tcp://127.0.0.1:2375
-          # Disable the internal version check that is failing
-          TESTCONTAINERS_CHECKS_DISABLE: "true"
-          # Force the API version to match the runner
           DOCKER_API_VERSION: "1.44"
+          TESTCONTAINERS_CHECKS_DISABLE: "true"
+          # Ensures AWT/Swing works in headless mode
+          JAVA_AWT_HEADLESS: "false" 
         run: >
-          xvfb-run -a mvn -B -ntp verify -Pjacoco ${{ env.SONARGOAL }}
+          xvfb-run --server-args="-screen 0 1024x768x24" 
+          mvn -B -ntp verify -Pjacoco ${{ env.SONARGOAL }}
           -Dsonar.organization=${{ env.SONAR_ORG }}
           -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
           -Dsonar.host.url=https://sonarcloud.io
