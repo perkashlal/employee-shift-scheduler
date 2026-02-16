@@ -5,21 +5,81 @@ on:
     branches: ["main", "master"]
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      # Force Testcontainers to use the Linux Docker socket (NOT tcp://localhost:2375)
+      DOCKER_HOST: unix:///var/run/docker.sock
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: "17"
           cache: maven
 
-      - name: Install virtual display
+      - name: Install Xvfb
         run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Run tests
-        run: xvfb-run -a mvn -B verify
+      - name: Ensure Docker is available
+        run: |
+          sudo systemctl start docker || true
+          docker version
+          docker info
+          test -S /var/run/docker.sock
+          ls -l /var/run/docker.sock
+
+      # Same idea as your professor: add sonar goal only when token exists
+      - name: Set Sonar goal (only if SONAR_TOKEN exists)
+        run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
+        if: ${{ env.SONAR_TOKEN != '' }}
+
+      # IMPORTANT:
+      # - Runs unit + IT + E2E (because your pom binds failsafe to integration-test/verify)
+      # - Generates JaCoCo XML (your sonar-project.properties points to target/site/jacoco/jacoco.xml)
+      - name: Build + tests + coverage (+ SonarCloud when enabled)
+        run: >
+          xvfb-run -a mvn -B -ntp verify -Pjacoco $SONARGOAL
+          -Dsonar.host.url=https://sonarcloud.io
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: "**/target/surefire-reports/**"
+          if-no-files-found: warn
+
+      - name: Upload failsafe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failsafe-reports
+          path: "**/target/failsafe-reports/**"
+          if-no-files-found: warn
+
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: |
+            **/target/site/jacoco/**
+            **/target/site/jacoco-it/**
+          if-no-files-found: warn
