@@ -79,7 +79,7 @@ jobs:
           name: failsafe-reports
           path: |
             **/target/failsafe-reports/**
-          if-no-files-found: warn
+          if-no-files-found: ignore
 
   coverage-sonar:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
