@@ -4,6 +4,7 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - uses: actions/checkout@v4
@@ -14,7 +15,16 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Verify Docker
+        run: |
+          docker version
+          docker info
+          ls -la /var/run/docker.sock
 
       - name: Build and Test
         shell: bash
@@ -22,6 +32,5 @@ jobs:
           set -euo pipefail
           unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
           export DOCKER_HOST=unix:///var/run/docker.sock
-          docker version
-          docker info
+          env | grep DOCKER || true
           xvfb-run -a mvn -B -ntp verify -Pjacoco
