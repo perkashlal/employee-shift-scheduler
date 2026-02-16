@@ -1,82 +1,47 @@
 name: CI
 
 on:
-  push:
-    branches: ["main", "master"]
-  pull_request:
+push:
+branches: [ "main", "master" ]
+pull_request:
 
+jobs:
+build:
+runs-on: ubuntu-latest
+
+```
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+env:
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
+steps:
+  - name: Checkout
+    uses: actions/checkout@v4
+    with:
+      fetch-depth: 0
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # like professor: better for Sonar relevance
+  - name: Set up Java
+    uses: actions/setup-java@v4
+    with:
+      distribution: temurin
+      java-version: 17
+      cache: maven
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: maven
+  # GUI tests (Swing)
+  - name: Install Xvfb
+    run: sudo apt-get update && sudo apt-get install -y xvfb
 
-      - name: Install Xvfb (for Swing tests)
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+  # IMPORTANT: verify docker is available for Testcontainers
+  - name: Verify Docker
+    run: docker info
 
-      - name: Docker sanity check
-        run: |
-          docker version
-          docker info
-          ls -l /var/run/docker.sock
-
-      # CRITICAL:
-      # If your repo contains .testcontainers.properties (often created on Windows),
-      # it can force Testcontainers to look for Docker Desktop / TCP 2375 and FAIL in GitHub Actions.
-      - name: Remove Testcontainers local overrides
-        run: |
-          rm -f .testcontainers.properties
-          rm -f src/test/resources/testcontainers.properties || true
-          echo "DOCKER_HOST=" >> $GITHUB_ENV
-          echo "DOCKER_API_VERSION=" >> $GITHUB_ENV
-
-      # Optional: enable Sonar only if token exists (same idea as professor)
-      - name: Enable Sonar goal if token is present
-        if: ${{ secrets.SONAR_TOKEN != '' }}
-        run: echo "SONARGOAL=sonar:sonar" >> $GITHUB_ENV
-
-      - name: Build + Unit + IT + E2E + JaCoCo (and Sonar if configured)
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: >
-          xvfb-run -a mvn -B -ntp clean verify -Pjacoco ${{ env.SONARGOAL }}
-          -Dsonar.organization=perkashlal
-          -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.projectKey=perkashlal_employee-shift
-
-      - name: Upload test reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-reports
-          path: |
-            **/target/surefire-reports/**
-            **/target/failsafe-reports/**
-          if-no-files-found: warn
-
-      - name: Upload JaCoCo report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-report
-          path: |
-            **/target/site/jacoco/**
-            **/target/site/jacoco-it/**
-          if-no-files-found: warn
+  # Run tests + coverage + sonar
+  - name: Build and analyze
+    run: |
+      xvfb-run -a mvn -B -ntp verify -Pjacoco sonar:sonar \
+      -Dsonar.organization=perkashlal \
+      -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
+      -Dsonar.host.url=https://sonarcloud.io
+```
