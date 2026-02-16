@@ -91,16 +91,12 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
 
     @Test
     public void shouldClearFieldsAndDisableAddButtonAfterAddClick() {
-    	assertNotNull(window);
-    	window.textBox("idTextBox").setText("1");
+        assertNotNull(window);
+        window.textBox("idTextBox").setText("1");
         window.textBox("nameTextBox").setText("Alice");
-
         window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
-
-        robot().waitForIdle();
-
-        window.textBox("idTextBox").requireText("");
+        window.textBox("idTextBox").requireText(""); 
         window.textBox("nameTextBox").requireText("");
         window.button("btnAddEmployee").requireDisabled();
     }
