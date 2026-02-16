@@ -134,4 +134,5 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=perkashlal \
             -Dsonar.projectKey=perkashlal_employee-shift \
+             -Dsonar.token=ace70821756c9e0dd7df9734e74992783ce1a1aa
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
