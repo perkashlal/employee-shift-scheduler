@@ -142,7 +142,27 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${surefire.version}</version>
         </plugin>
-
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-failsafe-plugin</artifactId>
+  <configuration>
+    <useModulePath>false</useModulePath>
+    <forkCount>1</forkCount>
+    <reuseForks>false</reuseForks>
+    <environmentVariables>
+      <DOCKER_API_VERSION>1.44</DOCKER_API_VERSION>
+      <DOCKER_HOST>tcp://127.0.0.1:2375</DOCKER_HOST>
+    </environmentVariables>
+    <argLine>
+      @{failsafeArgLine}
+      --add-opens java.base/java.util=ALL-UNNAMED
+      --add-opens java.base/java.lang=ALL-UNNAMED
+      --add-opens java.desktop/java.awt=ALL-UNNAMED
+      --add-opens java.desktop/javax.swing=ALL-UNNAMED
+    </argLine>
+  </configuration>
+ 
+</plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-failsafe-plugin</artifactId>
