@@ -98,7 +98,6 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
-        // ✅ Ensure the Swing EDT has processed the click and UI updates (important on CI/Xvfb)
         robot().waitForIdle();
 
         window.textBox("idTextBox").requireText("");
@@ -115,7 +114,6 @@ public class EmployeeViewTest extends AssertJSwingJUnitTestCase {
         window.button("btnAddEmployee").requireEnabled();
         window.button("btnAddEmployee").click();
 
-        // ✅ Avoid CI flakiness: wait for EDT before verifying
         robot().waitForIdle();
 
         verify(controller, timeout(1000)).addEmployee("1", "Alice");
