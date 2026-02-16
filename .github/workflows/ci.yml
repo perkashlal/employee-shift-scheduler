@@ -39,11 +39,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y xvfb socat
 
       - name: Setup Docker Bridge
-        # Solves "IllegalStateException: Could not find a valid Docker environment"
         run: |
           sudo chmod 666 /var/run/docker.sock
+          # Start the bridge in the background
           sudo socat TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock &
-          sleep 5
+          # Wait for the bridge to be active
+          timeout 30s sh -c 'until nc -z localhost 2375; do sleep 1; done'
           docker version
 
       - name: Enable Sonar goal when token exists
@@ -52,11 +53,9 @@ jobs:
 
       - name: Build and Test
         env:
-          # Docker connection for Testcontainers
           DOCKER_HOST: tcp://127.0.0.1:2375
           DOCKER_API_VERSION: "1.44"
           TESTCONTAINERS_CHECKS_DISABLE: "true"
-          # UI testing for AssertJ Swing
           JAVA_AWT_HEADLESS: "false" 
         run: >
           xvfb-run --server-args="-screen 0 1280x1024x24"
