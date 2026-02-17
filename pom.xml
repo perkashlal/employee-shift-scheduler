@@ -287,82 +287,92 @@
 
   <profiles>
     <profile>
-      <id>jacoco</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>jacoco-unit</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <configuration>
-                  <destFile>${project.build.directory}/jacoco.exec</destFile>
-                  <propertyName>surefireArgLine</propertyName>
-                  <append>true</append>
-                </configuration>
-              </execution>
-              <execution>
-                <id>jacoco-it</id>
-                <goals>
-                  <goal>prepare-agent-integration</goal>
-                </goals>
-                <configuration>
-                  <destFile>${project.build.directory}/jacoco-it.exec</destFile>
-                  <propertyName>failsafeArgLine</propertyName>
-                  <append>true</append>
-                </configuration>
-              </execution>
-              <execution>
-                <id>report-unit</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-                <configuration>
-                  <dataFile>${project.build.directory}/jacoco.exec</dataFile>
-                  <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
-                  <excludes>
-                    <exclude>**/repository/mongo/MongoConfig.*</exclude>
-                    <exclude>**/app/EmployeeSwingApp.*</exclude>
-                    <exclude>**/ui/EmployeeView.*</exclude>
-                  </excludes>
-                  <formats>
-                    <format>HTML</format>
-                    <format>XML</format>
-                  </formats>
-                </configuration>
-              </execution>
-              <execution>
-                <id>report-it</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>report-integration</goal>
-                </goals>
-                <configuration>
-                  <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
-                  <outputDirectory>${project.build.directory}/site/jacoco-it</outputDirectory>
-                  <excludes>
-                    <exclude>**/repository/mongo/MongoConfig.*</exclude>
-                    <exclude>**/app/EmployeeSwingApp.*</exclude>
-                    <exclude>**/ui/EmployeeView.*</exclude>
-                  </excludes>
-                  <formats>
-                    <format>HTML</format>
-                    <format>XML</format>
-                  </formats>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-      <properties>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml,${project.build.directory}/site/jacoco-it/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-      </properties>
-    </profile>
+  <id>jacoco</id>
+  <build>
+    <plugins>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+
+        <executions>
+
+          <!-- Attach JaCoCo to unit tests -->
+          <execution>
+            <id>prepare-agent-unit</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <destFile>${project.build.directory}/jacoco.exec</destFile>
+              <propertyName>surefireArgLine</propertyName>
+              <append>true</append>
+            </configuration>
+          </execution>
+
+          <!-- Attach JaCoCo to integration tests -->
+          <execution>
+            <id>prepare-agent-it</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+            <configuration>
+              <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+              <propertyName>failsafeArgLine</propertyName>
+              <append>true</append>
+            </configuration>
+          </execution>
+
+          <!-- Merge unit + IT coverage -->
+          <execution>
+            <id>merge-exec</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>merge</goal>
+            </goals>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.build.directory}</directory>
+                  <includes>
+                    <include>jacoco.exec</include>
+                    <include>jacoco-it.exec</include>
+                  </includes>
+                </fileSet>
+              </fileSets>
+              <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+            </configuration>
+          </execution>
+
+          <!-- Generate ONE final XML report -->
+          <execution>
+            <id>report-merged</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+              <formats>
+                <format>XML</format>
+                <format>HTML</format>
+              </formats>
+            </configuration>
+          </execution>
+
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <properties>
+    <sonar.coverage.jacoco.xmlReportPaths>
+      ${project.build.directory}/site/jacoco/jacoco.xml
+    </sonar.coverage.jacoco.xmlReportPaths>
+  </properties>
+</profile>
   </profiles>
 </project>
