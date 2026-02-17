@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # 1) Unit tests + unit JaCoCo XML
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -26,11 +27,22 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Install Xvfb
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+      - name: Install Xvfb + lightweight WM (stable Swing tests)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb openbox
 
-      - name: Run unit tests (Surefire)
-        run: xvfb-run -a mvn -B -ntp clean test
+      - name: Run unit tests with JaCoCo (skip IT/E2E)
+        shell: bash
+        env:
+          JAVA_TOOL_OPTIONS: "-Djava.awt.headless=false"
+        run: |
+          set -euxo pipefail
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1280x1024x24 -ac +extension RANDR &
+          openbox-session >/dev/null 2>&1 &
+          sleep 2
+          mvn -B -ntp clean verify -Pjacoco -DskipITs
 
       - name: Upload surefire reports
         if: always()
@@ -41,9 +53,19 @@ jobs:
             **/target/surefire-reports/**
           if-no-files-found: warn
 
+      - name: Upload unit JaCoCo XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-unit-xml
+          path: target/site/jacoco/jacoco.xml
+          if-no-files-found: warn
+
+
+  # 2) Integration/E2E tests + IT JaCoCo XML (Docker/Testcontainers)
   integration-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     needs: unit-tests
 
     steps:
@@ -62,14 +84,16 @@ jobs:
         run: |
           docker version
           docker info
-      # Runs Failsafe only (integration/e2e), skips Surefire unit tests
-      - name: Run integration + e2e tests (Failsafe)
+          ls -la /var/run/docker.sock
+
+      - name: Run integration + e2e tests with JaCoCo (Failsafe only)
         shell: bash
         run: |
           set -euxo pipefail
           unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
           export DOCKER_HOST=unix:///var/run/docker.sock
-          xvfb-run -a mvn -B -ntp verify -DskipTests -DskipITs=false
+          xvfb-run -a mvn -B -ntp clean verify -Pjacoco -DskipTests -DskipITs=false
+
       - name: Upload failsafe reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -79,16 +103,26 @@ jobs:
             **/target/failsafe-reports/**
           if-no-files-found: ignore
 
-  coverage-sonar:
+      - name: Upload IT JaCoCo XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-it-xml
+          path: target/site/jacoco-it/jacoco.xml
+          if-no-files-found: warn
+
+
+  # 3) SonarCloud imports both XMLs, does NOT rerun tests
+  sonar:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs: unit-tests
+    timeout-minutes: 20
+    needs: [unit-tests, integration-tests]
 
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # required for SonarCloud blame/branch analysis
+          fetch-depth: 0
 
       - uses: actions/setup-java@v4
         with:
@@ -96,39 +130,30 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Install Xvfb + lightweight WM (stable Swing tests)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb openbox
-      # Runs unit tests + generates JaCoCo XML, skipping IT/E2E
-      - name: Run unit tests with JaCoCo (skip IT/E2E)
-        shell: bash
-        env:
-          JAVA_TOOL_OPTIONS: "-Djava.awt.headless=false"
-        run: |
-          set -euxo pipefail
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1280x1024x24 -ac +extension RANDR &
-          openbox-session >/dev/null 2>&1 &
-          sleep 2
-          mvn -B -ntp clean verify -Pjacoco -DskipITs
-      - name: Upload JaCoCo report
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Download unit JaCoCo XML
+        uses: actions/download-artifact@v4
         with:
-          name: jacoco-report
-          path: |
-            **/target/site/jacoco/**
-            **/target/site/jacoco/jacoco.xml
-          if-no-files-found: warn
+          name: jacoco-unit-xml
+          path: target/site/jacoco
 
-      - name: SonarCloud Scan
+      - name: Download IT JaCoCo XML
+        uses: actions/download-artifact@v4
+        with:
+          name: jacoco-it-xml
+          path: target/site/jacoco-it
+
+      - name: Verify coverage files exist
+        run: |
+          ls -la target/site/jacoco || true
+          ls -la target/site/jacoco-it || true
+
+      - name: SonarCloud Scan (imports unit + IT coverage)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn -B -ntp sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=perkashlal \
-            -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
-            -Dsonar.token=${SONAR_TOKEN} \
-            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        run: >
+          mvn -B -ntp sonar:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.organization=perkashlal
+          -Dsonar.projectKey=perkashlal_employee-shift-scheduler
+          -Dsonar.token=${SONAR_TOKEN}
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml
