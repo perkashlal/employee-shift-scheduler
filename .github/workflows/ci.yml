@@ -1,29 +1,26 @@
-name: Java CI with Maven, Docker, and SonarCloud in Linux
+name: CI + SonarCloud
 
 on:
   push:
-    branches: ["main", "master"]
+    branches: [ "main", "master" ]
   pull_request:
-
-permissions:
-  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout (full history for Sonar blame)
+      - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0   # required for SonarCloud blame
 
-      - name: Setup JDK 17
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: 17
           cache: maven
 
       - name: Cache SonarCloud packages
@@ -38,52 +35,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb
 
-      - name: Docker info (for Testcontainers)
+      - name: Verify (unit + IT) with JaCoCo
+        env:
+          JAVA_TOOL_OPTIONS: "-Djava.awt.headless=false"
         run: |
-          docker version
-          docker info
-          ls -la /var/run/docker.sock
+          xvfb-run -a mvn -B -ntp clean verify -Pjacoco
 
-      # 1) Unit tests + unit JaCoCo (no Docker required)
-      - name: Unit tests + JaCoCo (skip IT/E2E)
-        run: xvfb-run -a mvn -B -ntp clean verify -Pjacoco -DskipITs
-
-      # 2) IT/E2E + IT JaCoCo (Docker required) - do NOT fail the workflow if it fails
-      #    This lets SonarCloud still update from unit coverage.
-      - name: Integration + E2E + JaCoCo (best effort)
-        continue-on-error: true
-        shell: bash
-        run: |
-          set -euxo pipefail
-          unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
-          xvfb-run -a mvn -B -ntp verify -Pjacoco -DskipTests -DskipITs=false
-
-      - name: Debug coverage files
-        if: always()
-        run: |
-          ls -la target/site || true
-          ls -la target/site/jacoco || true
-          ls -la target/site/jacoco-it || true
-          find target/site -maxdepth 3 -type f -name "jacoco*.xml" -print || true
-
-      # 3) SonarCloud analysis (Maven) - exactly like the book, but with both XML paths.
-      #    If jacoco-it.xml does not exist (because IT failed), Sonar still imports unit.
       - name: SonarCloud Scan
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: bash
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euxo pipefail
-
-          REPORTS="target/site/jacoco/jacoco.xml"
-          if [ -f target/site/jacoco-it/jacoco.xml ]; then
-            REPORTS="$REPORTS,target/site/jacoco-it/jacoco.xml"
-          fi
-
           mvn -B -ntp sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=perkashlal \
             -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
             -Dsonar.token=${SONAR_TOKEN} \
-            -Dsonar.coverage.jacoco.xmlReportPaths="$REPORTS"
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
