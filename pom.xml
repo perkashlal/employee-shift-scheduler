@@ -130,10 +130,6 @@
             <useModulePath>false</useModulePath>
             <forkCount>1</forkCount>
             <reuseForks>false</reuseForks>
-            <environmentVariables>
-              <DOCKER_API_VERSION>1.44</DOCKER_API_VERSION>
-              <DOCKER_HOST>tcp://127.0.0.1:2375</DOCKER_HOST>
-            </environmentVariables>
           </configuration>
         </plugin>
         <plugin>
