@@ -37,7 +37,6 @@
     <sonar.projectKey>employee-shift-scheduler</sonar.projectKey>
     <sonar.projectName>Employee Shift Scheduler</sonar.projectName>
     <sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
-    <sonar.junit.reportPaths>${project.build.directory}/surefire-reports,${project.build.directory}/failsafe-reports</sonar.junit.reportPaths>
     <sonar.coverage.exclusions>**/repository/mongo/MongoConfig.*,**/app/EmployeeSwingApp.*,**/ui/EmployeeView.*</sonar.coverage.exclusions>
   </properties>
 
