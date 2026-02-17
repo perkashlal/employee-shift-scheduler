@@ -62,7 +62,6 @@ jobs:
         run: |
           docker version
           docker info
-
       # Runs Failsafe only (integration/e2e), skips Surefire unit tests
       - name: Run integration + e2e tests (Failsafe)
         shell: bash
@@ -71,7 +70,6 @@ jobs:
           unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
           export DOCKER_HOST=unix:///var/run/docker.sock
           xvfb-run -a mvn -B -ntp verify -DskipTests -DskipITs=false
-
       - name: Upload failsafe reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -102,7 +100,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb openbox
-
       # Runs unit tests + generates JaCoCo XML, skipping IT/E2E
       - name: Run unit tests with JaCoCo (skip IT/E2E)
         shell: bash
@@ -115,7 +112,6 @@ jobs:
           openbox-session >/dev/null 2>&1 &
           sleep 2
           mvn -B -ntp clean verify -Pjacoco -DskipITs
-
       - name: Upload JaCoCo report
         if: always()
         uses: actions/upload-artifact@v4
@@ -134,4 +130,5 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=perkashlal \
             -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
+            -Dsonar.token=${SONAR_TOKEN} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
