@@ -18,21 +18,22 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
           cache: maven
 
-      - name: Install Xvfb + lightweight WM (stable Swing tests)
+      - name: Install Xvfb + Openbox
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb openbox
 
-      # Unit tests + unit JaCoCo XML (skip IT/E2E)
-      - name: Run unit tests with JaCoCo (skip IT/E2E)
+      - name: Unit tests + JaCoCo (skip IT/E2E)
         shell: bash
         env:
           JAVA_TOOL_OPTIONS: "-Djava.awt.headless=false"
@@ -67,16 +68,20 @@ jobs:
     needs: unit-tests
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
           cache: maven
 
       - name: Install Xvfb
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
 
       - name: Docker info
         run: |
@@ -84,8 +89,7 @@ jobs:
           docker info
           ls -la /var/run/docker.sock
 
-      # Integration/E2E (Failsafe) + IT JaCoCo XML
-      - name: Run integration + e2e tests with JaCoCo (Failsafe only)
+      - name: Integration + E2E + JaCoCo (Failsafe only)
         shell: bash
         run: |
           set -euxo pipefail
@@ -100,7 +104,7 @@ jobs:
           ls -la target/site || true
           ls -la target/site/jacoco || true
           ls -la target/site/jacoco-it || true
-          find target -maxdepth 3 -type f -name "jacoco*.xml" -print || true
+          find target -maxdepth 4 -type f -name "jacoco*.xml" -print || true
 
       - name: Upload failsafe reports
         if: always()
@@ -126,11 +130,13 @@ jobs:
     needs: [unit-tests, integration-tests]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (full history for Sonar)
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
@@ -148,18 +154,18 @@ jobs:
           name: jacoco-it-xml
           path: target/site/jacoco-it
 
-      - name: Verify coverage files exist
+      - name: Verify downloaded coverage files
         run: |
           ls -la target/site/jacoco || true
           ls -la target/site/jacoco-it || true
 
-      - name: SonarCloud Scan (imports unit + IT coverage)
+      - name: SonarCloud Scan (import unit + IT coverage)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: >
-          mvn -B -ntp sonar:sonar
-          -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.organization=perkashlal
-          -Dsonar.projectKey=perkashlal_employee-shift-scheduler
-          -Dsonar.token=${SONAR_TOKEN}
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml
+        run: |
+          mvn -B -ntp sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=perkashlal \
+            -Dsonar.projectKey=perkashlal_employee-shift-scheduler \
+            -Dsonar.token=${SONAR_TOKEN} \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml
