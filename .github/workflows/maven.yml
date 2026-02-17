@@ -44,17 +44,19 @@ jobs:
           docker version --format 'Client API={{.Client.APIVersion}} Server API={{.Server.APIVersion}}'
           docker info
           ls -l /var/run/docker.sock
+          docker ps
 
       - name: Verify (unit + IT + E2E) with JaCoCo
         env:
           JAVA_TOOL_OPTIONS: "-Djava.awt.headless=false"
 
-          # Force Testcontainers to use the real Linux docker socket:
+          # Force Testcontainers to use the Linux Docker daemon
           DOCKER_HOST: unix:///var/run/docker.sock
           TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: /var/run/docker.sock
 
-          # Avoid the "client version 1.32 too old" issue if it is being forced:
-          DOCKER_API_VERSION: ""
+          #  FINAL FIX: prevent Docker Desktop strategy & force Unix socket
+          TESTCONTAINERS_DOCKER_CLIENT_STRATEGY: org.testcontainers.dockerclient.UnixSocketClientProviderStrategy
+
         run: |
           xvfb-run -a mvn -B -ntp clean verify -Pjacoco
 
