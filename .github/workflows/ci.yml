@@ -13,7 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 1) Unit tests + unit JaCoCo XML
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -32,6 +31,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb openbox
 
+      # Unit tests + unit JaCoCo XML (skip IT/E2E)
       - name: Run unit tests with JaCoCo (skip IT/E2E)
         shell: bash
         env:
@@ -59,10 +59,8 @@ jobs:
         with:
           name: jacoco-unit-xml
           path: target/site/jacoco/jacoco.xml
-          if-no-files-found: warn
+          if-no-files-found: error
 
-
-  # 2) Integration/E2E tests + IT JaCoCo XML (Docker/Testcontainers)
   integration-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -86,6 +84,7 @@ jobs:
           docker info
           ls -la /var/run/docker.sock
 
+      # Integration/E2E (Failsafe) + IT JaCoCo XML
       - name: Run integration + e2e tests with JaCoCo (Failsafe only)
         shell: bash
         run: |
@@ -93,6 +92,15 @@ jobs:
           unset DOCKER_HOST DOCKER_TLS_VERIFY DOCKER_CERT_PATH DOCKER_API_VERSION
           export DOCKER_HOST=unix:///var/run/docker.sock
           xvfb-run -a mvn -B -ntp clean verify -Pjacoco -DskipTests -DskipITs=false
+
+      - name: Debug: list coverage files
+        if: always()
+        run: |
+          ls -la target || true
+          ls -la target/site || true
+          ls -la target/site/jacoco || true
+          ls -la target/site/jacoco-it || true
+          find target -maxdepth 3 -type f -name "jacoco*.xml" -print || true
 
       - name: Upload failsafe reports
         if: always()
@@ -109,10 +117,8 @@ jobs:
         with:
           name: jacoco-it-xml
           path: target/site/jacoco-it/jacoco.xml
-          if-no-files-found: warn
+          if-no-files-found: error
 
-
-  # 3) SonarCloud imports both XMLs, does NOT rerun tests
   sonar:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     runs-on: ubuntu-latest
